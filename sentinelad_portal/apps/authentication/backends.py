@@ -80,7 +80,7 @@ def _get_role(groups):
 
 
 def _audit_log(username, action, success, ip='unknown', extra=None):
-    """Write structured audit log entry for Loki/Grafana ingestion."""
+    """Write structured audit log entry to DB, Loki/Grafana and Telegram."""
     record = {
         "user": username,
         "action": action,
@@ -91,6 +91,22 @@ def _audit_log(username, action, success, ip='unknown', extra=None):
     if extra:
         record.update(extra)
     logger.info(json.dumps(record))
+
+    # Also save to AuditLog DB model and trigger Telegram alert
+    try:
+        from apps.audit.middleware import log_action
+        user_obj = User.objects.filter(username=username).first()
+        desc = extra.get('reason', '') if extra else ''
+        log_action(
+            user=user_obj,
+            action=action,
+            resource_type='AUTH',
+            resource_name=username,
+            description=f"{action} ({desc})" if desc else action,
+            source_ip=ip
+        )
+    except Exception as e:
+        logger.error(f"Error in backend _audit_log: {e}")
 
 
 class SentinelADBackend(ModelBackend):
@@ -105,8 +121,14 @@ class SentinelADBackend(ModelBackend):
             return None
 
         raw_username = username
-        username = _parse_username(username)
-        source_ip = request.META.get('REMOTE_ADDR', 'unknown') if request else 'unknown'
+        if request:
+            x_forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
+            if x_forwarded:
+                source_ip = x_forwarded.split(',')[0].strip()
+            else:
+                source_ip = request.META.get('REMOTE_ADDR', 'unknown')
+        else:
+            source_ip = 'unknown'
 
         if getattr(settings, 'LDAP_MOCK_MODE', True):
             return self._mock_authenticate(username, password, source_ip, raw_username)

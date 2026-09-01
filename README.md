@@ -62,6 +62,69 @@ Máy chủ ghi nhận đầy đủ các sự kiện an ninh quan trọng: Event 
 
 ---
 
+### III. Cụm Giám sát Hạ tầng & An ninh (Grafana Dashboards)
+
+#### 1. SentinelAD - Security Overview Dashboard
+Giám sát tổng quan sự kiện an ninh mạng, tỷ lệ đăng nhập thành công vs thất bại (`Failed Events: 81`), trạng thái các dịch vụ Active Directory then chốt (DHCP, DNS, KDC, Netlogon, NTDS) và luồng Live Audit Log Stream theo thời gian thực.
+![Security Overview Dashboard](docs/screenshots/monitoring_security_dashboard.png)
+
+#### 2. SentinelAD - Infrastructure Monitoring Dashboard
+Theo dõi chỉ số phần cứng máy chủ toàn diện: Thời gian hoạt động (System Uptime: 1.2 ngày), Mức sử dụng RAM (Memory Usage: 67.2%), Dung lượng ổ đĩa (Disk Usage: 2.93%) và biến động lưu lượng mạng (Network Traffic).
+![Infrastructure Monitoring Dashboard](docs/screenshots/monitoring_infra_dashboard.png)
+
+#### 3. SentinelAD - Application Metrics Dashboard
+Thống kê hoạt động của Cổng thông tin nội bộ: Tổng số lượt truy cập (Total Audit Events: 85), Số lượng người dùng hoạt động (Active Users: 4) và luồng log ứng dụng chi tiết.
+![Application Metrics Dashboard](docs/screenshots/monitoring_app_dashboard.png)
+
+#### 4. Windows Node 2021 Dashboard (Hạ tầng Máy chủ Windows)
+Giám sát chi tiết hiệu năng của máy chủ Windows Server 2022 qua Windows Exporter: Tải CPU load, mức chiếm dụng bộ nhớ RAM, tốc độ đọc/ghi ổ cứng và lưu lượng mạng card mạng.
+![Windows Node Dashboard](docs/screenshots/monitoring_windows_exporter.png)
+
+#### 5. Windows Services & System Threads Dashboard
+Theo dõi trạng thái các dịch vụ lõi Windows Service (Active, Boot, Disabled, Manual), số lượng System Threads và System Context Switches.
+![Windows Services Dashboard](docs/screenshots/monitoring_windows_services.png)
+
+---
+
+### IV. Diễn tập An ninh Mạng (Red Team vs Blue Team Testing)
+
+Mô hình diễn tập thực tế được thực hiện từ máy **Linux (Attacker - IP: 192.168.101.6)** nhắm vào **Web Portal (192.168.101.7)** và **Domain Controller (192.168.101.10)**:
+
+#### 1. Kiểm thử Bắn tải lưu lượng (HTTP Flood / DoS Test)
+* **Công cụ:** `ApacheBench (ab)`
+* **Lệnh thực thi:**
+  ```bash
+  ab -n 2000 -c 50 http://192.168.101.7/
+  ```
+* **Kết quả:** Hoàn thành 2.000 requests với tốc độ **541.12 req/sec**, biểu đồ mạng và CPU trên Grafana phản hồi tăng vọt tức thì.
+
+#### 2. Kiểm thử Dò bẻ khóa Mật khẩu (Brute-Force Attack)
+* **Công cụ:** `THC-Hydra`
+* **Lệnh thực thi:**
+  ```bash
+  hydra -l khai.it -P pass.txt 192.168.101.7 http-post-form "/auth/login/:username=^USER^&password=^PASS^:Tên đăng nhập hoặc mật khẩu không đúng" -V
+  ```
+* **Kết quả:** Web Portal ghi nhận liên tiếp 5 sự kiện `LOGIN_FAILURE`, hệ thống kích hoạt gửi cảnh báo đỏ tức thời qua Telegram Bot.
+
+#### 3. Mô phỏng Tấn công Phân tán từ Mạng Botnet (Multi-IP Botnet Attack)
+* **Công cụ:** `multi_ip_attack.py`
+* **Lệnh thực thi:**
+  ```bash
+  python3 multi_ip_attack.py
+  ```
+* **Kết quả:** Gửi 15 đợt tấn công từ 15 địa chỉ IP quốc tế khác nhau (Mỹ, Nga, Singapore, Đức, Việt Nam), hệ thống **AI Security Analyzer** phát hiện và phân tích hành vi xâm nhập dạng *Distributed Credential Stuffing*.
+
+#### 4. Quét cổng & Dò tìm đường dẫn nhạy cảm
+* **Công cụ:** `Nmap` & `FFUF`
+* **Lệnh thực thi:**
+  ```bash
+  nmap -sV -p 80,3000,9090,389,53 192.168.101.7
+  ffuf -w wordlist.txt -u http://192.168.101.7/FUZZ -mc 200,301,403,404
+  ```
+* **Kết quả:** Xác định chính xác các dịch vụ đang mở và các phản hồi HTTP status code.
+
+---
+
 ## 🏗️ Sơ đồ kiến trúc & Luồng hoạt động
 
 ```
@@ -115,10 +178,10 @@ Máy chủ ghi nhận đầy đủ các sự kiện an ninh quan trọng: Event 
 ### 3. Giám sát an toàn hạ tầng & Cảnh báo
 * **Audit Logging:** Ghi nhận toàn bộ sự kiện đăng nhập thành công/thất bại, IP truy cập và lịch sử chỉnh sửa dữ liệu.
 * **AI Security Analyzer:** Kết nối mô hình Llama 3.1 để đọc log đăng nhập, phát hiện hành vi dò quét mật khẩu (Event 4625 / Brute-force).
-* **Telegram Bot Alerts:** Tự động gửi thông báo khẩn cấp về điện thoại của Quản trị viên khi phát hiện sự cố bảo mật.
+* **Telegram Bot Alerts & Control Center:** Tự động gửi thông báo khẩn cấp về điện thoại của Quản trị viên và nhận lệnh khóa tài khoản từ xa qua Telegram.
 * **Cụm Docker Observability:**
   * **Prometheus:** Thu thập metrics tài nguyên máy chủ qua Windows Exporter.
-  * **Grafana:** Trực quan hóa dashboard giám sát CPU, RAM, Disk, Network.
+  * **Grafana:** 4 Dashboards trực quan hóa giám sát CPU, RAM, Disk, Network, Security.
   * **Loki & Promtail:** Thu thập và tìm kiếm log tập trung.
 * **Remote Access VPN:** Cấu hình VPN Server (IKEv2 / IPsec) trên Windows Server 2022 để quản trị viên kết nối an toàn từ xa khi đi công tác.
 
