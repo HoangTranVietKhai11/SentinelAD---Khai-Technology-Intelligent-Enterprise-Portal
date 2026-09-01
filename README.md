@@ -90,13 +90,13 @@ Theo dõi trạng thái các dịch vụ lõi Windows Service (Active, Boot, Dis
 
 Mô hình diễn tập thực tế được thực hiện từ máy **Linux (Attacker - IP: 192.168.101.6)** nhắm vào **Web Portal (192.168.101.7)** và **Domain Controller (192.168.101.10)**:
 
-#### 1. Kiểm thử Bắn tải lưu lượng (HTTP Flood / DoS Test)
+#### 1. Kiểm thử Bắn tải lưu lượng (HTTP Flood / DoS & Disk I/O Stress Test)
 * **Công cụ:** `ApacheBench (ab)`
 * **Lệnh thực thi:**
   ```bash
-  ab -n 2000 -c 50 http://192.168.101.7/
+  ab -n 3000 -c 30 http://192.168.101.7/static/css/sentinel.css
   ```
-* **Kết quả:** Hoàn thành 2.000 requests với tốc độ **541.12 req/sec**, biểu đồ mạng và CPU trên Grafana phản hồi tăng vọt tức thì.
+* **Kết quả:** Hoàn thành 3.000 requests trong **7.94 giây** (tốc độ **377.64 req/sec**, truyền tải **80.1 MB dữ liệu** với băng thông đạt **9.85 MB/s**, 0 lỗi), biểu đồ mạng và Disk I/O trên Grafana phản hồi tăng vọt tức thì.
 
 #### 2. Kiểm thử Dò bẻ khóa Mật khẩu (Brute-Force Attack)
 * **Công cụ:** `THC-Hydra`
