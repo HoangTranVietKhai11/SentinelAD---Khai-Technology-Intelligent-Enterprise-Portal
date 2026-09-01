@@ -86,7 +86,24 @@ Theo dõi trạng thái các dịch vụ lõi Windows Service (Active, Boot, Dis
 
 ---
 
-### IV. Diễn tập An ninh Mạng (Red Team vs Blue Team Testing)
+### IV. Trợ lý Giám sát & Điều khiển qua Telegram Bot (`Sentinel_AI`)
+
+Hệ thống tích hợp **Bot Telegram Điều khiển & Báo động Khẩn cấp 24/7** trực tiếp trên điện thoại của Quản trị viên:
+
+| 🚨 Cảnh báo Tấn công Thời gian thực | ⚙️ Trung tâm Điều khiển Lệnh AD |
+| :---: | :---: |
+| ![Cảnh báo thời gian thực](docs/screenshots/telegram_realtime_alerts.png) | ![Menu điều khiển](docs/screenshots/telegram_control_center.png) |
+
+| 📊 Kiểm tra Trạng thái & Nhật ký (`/logs`) | 👥 Tra cứu Danh sách Nhân viên AD (`/list_users`) |
+| :---: | :---: |
+| ![Trạng thái hệ thống](docs/screenshots/telegram_status_logs.png) | ![Danh sách nhân viên](docs/screenshots/telegram_list_users.png) |
+
+* **Báo động Đỏ tức thời (Real-time Alerts):** Tự động phát hiện và gửi tin nhắn cảnh báo khi có các đợt tấn công từ các địa chỉ IP quốc tế (`103.28.37.11`, `27.72.105.44`, `14.161.42.15`, `194.26.29.112`).
+* **Điều khiển từ xa không cần mở máy tính:** Hỗ trợ khóa/mở khóa tài khoản nhân viên (`/lock_user`, `/unlock_user`), đổi mật khẩu (`/reset_password`), xem 5 log gần nhất (`/logs`) và kiểm tra nhân sự (`/list_users`).
+
+---
+
+### V. Diễn tập An ninh Mạng (Red Team vs Blue Team Testing)
 
 Mô hình diễn tập thực tế được thực hiện từ máy **Linux (Attacker - IP: 192.168.101.6)** nhắm vào **Web Portal (192.168.101.7)** và **Domain Controller (192.168.101.10)**:
 
@@ -168,7 +185,7 @@ Mô hình diễn tập thực tế được thực hiện từ máy **Linux (Att
        │                                      - Group Policy Objects (GPO)
        │
        ├── 4. Phân tích an ninh (AI Analyzer - Llama 3.1 qua Groq API)
-       ├── 5. Cảnh báo xâm nhập thời gian thực qua Telegram Bot
+       ├── 5. Cảnh báo xâm nhập thời gian thực qua Telegram Bot (Sentinel_AI)
        └── 6. Đẩy Metrics & Logs vào Docker Stack (Prometheus + Loki + Grafana)
 ```
 
