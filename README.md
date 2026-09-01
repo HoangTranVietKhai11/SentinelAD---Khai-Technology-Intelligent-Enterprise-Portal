@@ -1,157 +1,152 @@
-# 🛡️ SentinelAD - Khai Technology Intelligent Enterprise Portal
+# SentinelAD - Khai Technology Enterprise Portal & Infrastructure Monitoring
 
-> **Cổng Thông tin Nội bộ Doanh nghiệp, Quản trị Định danh Tập trung Active Directory & Giám sát An toàn Hạ tầng Tích hợp Trí tuệ Nhân tạo (AI).**
-
-[![Django](https://img.shields.io/badge/Django-5.0+-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
-[![Active Directory](https://img.shields.io/badge/Windows%20Server-2022%20AD%20DS-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://microsoft.com)
-[![Prometheus](https://img.shields.io/badge/Prometheus-Monitoring-E6522C?style=for-the-badge&logo=prometheus&logoColor=white)](https://prometheus.io/)
-[![Grafana](https://img.shields.io/badge/Grafana-Observability-F46800?style=for-the-badge&logo=grafana&logoColor=white)](https://grafana.com/)
-[![Loki](https://img.shields.io/badge/Grafana%20Loki-Log%20Aggregation-F46800?style=for-the-badge&logo=grafana&logoColor=white)](https://grafana.com/oss/loki/)
-[![Llama 3.1](https://img.shields.io/badge/AI%20Analyzer-Groq%20Llama%203.1-00ADD8?style=for-the-badge&logo=openai&logoColor=white)](https://groq.com)
+Dự án xây dựng **Cổng thông tin nội bộ (Intranet Portal)** cho công ty công nghệ Khai Technology kết hợp **Quản trị định danh tập trung qua Active Directory (Windows Server 2022)** và **Hệ thống giám sát an toàn hạ tầng (Prometheus, Grafana, Loki, AI Log Analyzer, Telegram Alerts)**.
 
 ---
 
-## 📌 Giới thiệu tổng quan (Overview)
+## 📸 Hình ảnh minh chứng hoàn thành (Demo Screenshots)
 
-**SentinelAD (Khai Technology Enterprise Portal)** là giải pháp toàn diện kết hợp giữa **Cổng thông tin nội bộ (Intranet Portal)** cho doanh nghiệp công nghệ và **Hệ thống giám sát an toàn hạ tầng (Infrastructure Security Observability)**.
+### 1. Trang chủ Cổng thông tin (Dashboard)
+Trang tổng quan với banner chào mừng nhân viên, lịch họp sắp tới trong ngày, feed tin tức công ty, danh sách nhân sự mới và biểu đồ phân bổ tài sản.
 
-Hệ thống được thiết kế để tích hợp sâu với **Active Directory Domain Services (AD DS)** trên Windows Server 2022 (`khai.local`), cung cấp cơ chế xác thực tập trung, đồng bộ định danh hai chiều, phân quyền chặt chẽ theo vai trò (RBAC), quản trị nhân sự, tài sản, lịch họp, bảng lương bảo mật, cùng hệ thống cảnh báo xâm nhập thời gian thực và phân tích nhật ký bằng Trí tuệ Nhân tạo (AI).
+![Dashboard](docs/screenshots/dashboard.png)
 
 ---
 
-## 🏛️ Kiến trúc hệ thống (System Architecture)
+### 2. Quản lý Lịch họp & Điểm danh RSVP (`/meetings/`)
+Hỗ trợ tạo lịch họp theo phòng ban, lọc theo ngày/tuần, đặt địa điểm (Google Meet, Zoom, Phòng họp) và cho phép nhân viên bấm xác nhận tham dự (RSVP).
+
+![Lịch họp](docs/screenshots/meetings.png)
+
+---
+
+### 3. Thông báo lương bảo mật (`/payroll/`)
+Phân quyền bảo mật: nhân viên chỉ xem được phiếu lương của chính mình, chỉ Admin/HR mới có quyền tạo và quản lý bảng lương toàn công ty.
+
+![Thông báo lương](docs/screenshots/payroll.png)
+
+---
+
+### 4. Bảng tin nội bộ & Chào đón nhân sự mới (`/announcements/`)
+Đăng tải tin tức công ty, chính sách, sự kiện team building và bài viết chào mừng nhân viên mới gia nhập với tính năng ghim bài quan trọng.
+
+![Bảng tin nội bộ](docs/screenshots/announcements.png)
+
+---
+
+### 5. Danh mục Nhân viên đồng bộ trực tiếp từ Active Directory (`/employees/`)
+Dữ liệu nhân sự được đồng bộ 2 chiều trực tiếp từ máy chủ Domain Controller (`DC-01: 192.168.101.10`) qua giao thức LDAP. Có nút bấm "Đồng bộ từ DC-01" 1-click.
+
+![Quản lý nhân viên](docs/screenshots/employees.png)
+
+---
+
+## 🏗️ Sơ đồ kiến trúc & Luồng hoạt động
 
 ```
-                       ┌────────────────────────────────────────────────────────┐
-                       │                     CLIENT ACCESS                      │
-                       │   - Corporate Wi-Fi / LAN Network                      │
-                       │   - Remote Access VPN (IKEv2 / IPSec)                  │
-                       └───────────────────────────┬────────────────────────────┘
-                                                   │
-                                     http://intranet.khai.local
-                                                   │
-                                                   ▼
-┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                 SENTINELAD / KHAI TECHNOLOGY PORTAL                                     │
-│  ┌───────────────────────────┐ ┌───────────────────────────┐ ┌──────────────────────────────────────┐  │
-│  │   Intranet Operations     │ │   Enterprise Identity     │ │   Security & AI Observability        │  │
-│  │  - Dashboard & Timeline   │ │  - Active Directory Sync │ │  - Event Log Auditing (4624/4625)   │  │
-│  │  - Lịch họp & RSVP        │ │  - Two-way Provisioning   │ │  - AI Security Incident Analyzer    │  │
-│  │  - Bảng tin & Nhân viên mới│ │  - RBAC Role Mapping      │ │  - Real-time Telegram Bot Alert     │  │
-│  │  - Phiếu lương bảo mật    │ │  - IT Asset Management    │ │  - Grafana & Prometheus Dashboards  │  │
-│  │  - IT Helpdesk Tickets    │ │  - Employee & Dept OU     │ │  - Loki & Promtail Log Aggregator   │  │
-│  └───────────────────────────┘ └───────────────────────────┘ └──────────────────────────────────────┘  │
-└──────────────────────────────────────────┬─────────────────────────────────────────────────────────────┘
-                                           │
-                        LDAP (Port 389) / Windows Event Forwarding
-                                           │
-                                           ▼
-┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                 WINDOWS SERVER 2022 DOMAIN CONTROLLER                                  │
-│                                           DC-01 (192.168.101.10)                                       │
-│   - Domain Name: khai.local                                                                            │
-│   - Roles: Active Directory Domain Services (AD DS), DNS Server, DHCP Server, RRAS VPN Server          │
-│   - OUs: OU=Company (IT, HR, Finance, Sales, Marketing, Telesale, Servers, Workstations)               │
-│   - Security Groups: IT_Admin, HR_Manager, Finance_Manager, Sales_Manager, Helpdesk, Department_User   │
-└────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+[ Điện thoại / Laptop nhân viên ]
+       │
+       ├── (Trong cty): Wi-Fi / LAN nội bộ (DNS -> 192.168.101.10)
+       └── (Từ xa):     Remote Access VPN (IKEv2 / IPsec)
+       │
+       ▼
+[ Web Server Django - http://intranet.khai.local ] (192.168.101.7)
+       │
+       ├── 1. Xác thực người dùng (Live LDAP Port 389) ──────┐
+       ├── 2. Tự động tạo OU & User trên AD khi thêm mới ────┤
+       ├── 3. Giám sát & Quét log sự kiện (Event Logs) ──────┤
+       │                                                     ▼
+       │                                      [ Windows Server 2022 DC-01 ]
+       │                                             (192.168.101.10)
+       │                                      - Active Directory (khai.local)
+       │                                      - DNS Server & DHCP Server
+       │                                      - Routing & Remote Access (VPN)
+       │
+       ├── 4. Phân tích an ninh (AI Analyzer - Llama 3.1 qua Groq API)
+       ├── 5. Cảnh báo xâm nhập thời gian thực qua Telegram Bot
+       └── 6. Đẩy Metrics & Logs vào Docker Stack (Prometheus + Loki + Grafana)
 ```
 
 ---
 
-## 🚀 Các tính năng chính (Key Features)
+## ⚙️ Các tính năng đã hoàn thiện
 
-### 1. 🏢 Cổng Thông tin Doanh nghiệp (Enterprise Intranet)
-* **Trang chủ & Banner thời gian thực:** Chào đón nhân viên, đếm cuộc họp trong ngày, cảnh báo phiếu lương mới.
-* **Lịch họp thông minh (Meetings):** Tạo lịch họp (Standup, Review, All Hands...), đặt agenda, lọc theo ngày/tuần và tính năng **RSVP** xác nhận tham dự.
-* **Thông báo & Chào đón nhân sự mới (Announcements):** Phân loại thông báo (Nhân viên mới, Cập nhật công ty, Sự kiện, Chính sách) kèm chức năng **Ghim bài (Pinned)**.
-* **Phiếu lương bảo mật (Payroll):** Nhân viên chỉ xem được lương của chính mình. Tự động tính toán thực lãnh, lưu trữ lịch sử lương.
-* **Hỗ trợ kỹ thuật (IT Helpdesk Tickets):** Tạo ticket yêu cầu hỗ trợ, phân quyền xử lý theo mức độ ưu tiên (Critical, High, Medium, Low).
-* **Quản lý tài sản CNTT (IT Asset Tracking):** Quản lý máy chủ, thiết bị mạng, laptop, hạn bảo hành.
+### 1. Cổng thông tin nội bộ (Khai Technology Portal)
+* **Trang chủ (Dashboard):** Giao diện Dark-mode hiện đại, hiển thị lời chào theo tài khoản, đếm số cuộc họp hôm nay, thông báo lương chưa xem, feed tin tức.
+* **Lịch họp (Meetings):** Tạo lịch họp Standup, Họp Team, Review, All Hands; hỗ trợ RSVP cho người tham gia.
+* **Thông báo (Announcements):** Phân loại danh mục (Nhân viên mới, Cập nhật công ty, Sự kiện, Chính sách); hỗ trợ ghim bài lên đầu.
+* **Bảng lương (Payroll):** Xem chi tiết phiếu lương cá nhân, tính toán tự động lương thực lãnh, bảo mật phân quyền nghiêm ngặt.
+* **Yêu cầu hỗ trợ (IT Helpdesk Tickets):** Gửi yêu cầu hỗ trợ kỹ thuật nội bộ, phân loại theo mức độ ưu tiên.
+* **Quản lý thiết bị (IT Assets):** Quản lý máy chủ, laptop, switch, firewall, theo dõi thời hạn bảo hành.
 
-### 2. 🔐 Quản trị Định danh Active Directory (Identity & Access Management)
-* **Live LDAP Authentication:** Xác thực trực tiếp với `192.168.101.10:389` qua tài khoản Active Directory thật.
-* **Đồng bộ 2 chiều (Two-way Provisioning):** Tạo/Sửa/Xóa Nhân viên hoặc Phòng ban trên Web sẽ tự động kích hoạt tạo User và OU trên Active Directory trên Windows Server 2022.
-* **Nút Đồng bộ 1-Click (`sync_ad`):** Quét toàn bộ cây OU và danh sách tài khoản từ máy chủ DC-01 về cơ sở dữ liệu Web ngay lập tức.
-* **Phân quyền vai trò (RBAC):** Tự động ánh xạ từ Security Groups trong AD sang quyền hạn trên Web:
-  * `IT_Admin` / `Domain Admins` → **Administrator** (Toàn quyền)
-  * `HR_Manager` → **HR Manager** (Quản lý nhân sự, tạo phiếu lương)
-  * `Finance_Manager` → **Finance Manager** (Quản lý tài chính)
-  * `Sales_Manager` → **Sales Manager** (Quản trị kinh doanh)
-  * `Department_User` → **Employee** (Nhân viên thông thường)
+### 2. Tích hợp Active Directory (DC-01 `khai.local`)
+* **Xác thực Live LDAP:** Đăng nhập trực tiếp bằng tài khoản Active Directory thật (hỗ trợ định dạng `username`, `khai\username`, `username@khai.local`).
+* **Đồng bộ 2 chiều (Two-Way Sync):** Thao tác thêm/sửa/xóa nhân viên trên Web sẽ tự động gọi LDAP tạo/vô hiệu hóa User và OU tương ứng trên Windows Server 2022.
+* **Lệnh đồng bộ 1-click:** Lệnh `python manage.py sync_ad` hoặc bấm nút trên web để kéo toàn bộ User/OU từ DC-01 về web trong vài giây.
+* **Phân quyền vai trò (RBAC Mapping):**
+  * `Domain Admins` / `IT_Admin` → Quản trị viên (Toàn quyền).
+  * `HR_Manager` → Trưởng phòng nhân sự (Quản lý nhân viên, tạo phiếu lương).
+  * `Finance_Manager` → Quản lý tài chính.
+  * `Sales_Manager` → Quản lý kinh doanh.
+  * `Department_User` → Nhân viên tiêu chuẩn.
 
-### 3. 🤖 Giám sát An toàn & Trí tuệ Nhân tạo (AI & Observability)
-* **Nhật ký sự kiện (Audit Logging):** Ghi lại toàn bộ hành vi đăng nhập (thành công/thất bại), thao tác CRUD dữ liệu.
-* **AI Security Analyzer:** Tích hợp mô hình AI Llama 3.1 phân tích phát hiện tấn công Brute-force (Event 4625), xâm nhập bất thường và đưa ra khuyến nghị phòng thủ.
-* **Cảnh báo tức thì qua Telegram Bot:** Tự động gửi thông báo báo động khi có dấu hiệu tấn công hoặc lỗi hạ tầng về điện thoại Admin.
-* **Hạ tầng Giám sát Full-Stack:**
-  * **Prometheus:** Thu thập metrics tài nguyên máy chủ.
-  * **Grafana:** Dashboard hiển thị trực quan tải CPU/RAM, Event Logs và Network.
-  * **Loki & Promtail:** Tập trung và truy vấn log máy chủ thời gian thực.
-* **VPN Remote Access (IKEv2 / L2TP):** Kết nối an toàn từ xa cho quản trị viên khi đi công tác.
-
----
-
-## 🛠️ Công nghệ sử dụng (Tech Stack)
-
-| Thành phần | Công nghệ |
-| :--- | :--- |
-| **Backend** | Python 3.13, Django 5.0+, SQLite / PostgreSQL |
-| **Frontend** | HTML5, Vanilla CSS3 (Custom Dark/Tech Theme), Bootstrap 5, Chart.js |
-| **Directory Services** | Microsoft Windows Server 2022 AD DS, LDAP3 |
-| **AI Integration** | Groq API (Meta Llama 3.1 70B / 8B) |
-| **Monitoring & Logs** | Docker, Prometheus, Grafana, Loki, Promtail, Windows Exporter |
-| **Notifications** | Telegram Bot API (Python Telegram Bot) |
-| **Remote Access** | Windows Server Routing and Remote Access (RRAS), IKEv2 / IPsec |
+### 3. Giám sát an toàn hạ tầng & Cảnh báo
+* **Audit Logging:** Ghi nhận toàn bộ sự kiện đăng nhập thành công/thất bại, IP truy cập và lịch sử chỉnh sửa dữ liệu.
+* **AI Security Analyzer:** Kết nối mô hình Llama 3.1 để đọc log đăng nhập, phát hiện hành vi dò quét mật khẩu (Event 4625 / Brute-force).
+* **Telegram Bot Alerts:** Tự động gửi thông báo khẩn cấp về điện thoại của Quản trị viên khi phát hiện sự cố bảo mật.
+* **Cụm Docker Observability:**
+  * **Prometheus:** Thu thập metrics tài nguyên máy chủ qua Windows Exporter.
+  * **Grafana:** Trực quan hóa dashboard giám sát CPU, RAM, Disk, Network.
+  * **Loki & Promtail:** Thu thập và tìm kiếm log tập trung.
+* **Remote Access VPN:** Cấu hình VPN Server (IKEv2 / IPsec) trên Windows Server 2022 để quản trị viên kết nối an toàn từ xa khi đi công tác.
 
 ---
 
-## 💻 Hướng dẫn cài đặt & Khởi chạy (Getting Started)
+## 🚀 Hướng dẫn cài đặt & Chạy dự án
 
-### 1. Yêu cầu hệ thống
-* Python 3.10+
-* Docker & Docker Compose (cho cụm Giám sát)
-* Máy chủ Windows Server 2022 (Domain `khai.local`, IP `192.168.101.10`)
+### 1. Chuẩn bị môi trường
+* Python 3.10 trở lên
+* Docker & Docker Compose (nếu chạy cụm giám sát)
+* Máy chủ Windows Server 2022 đã cấu hình AD DS (`khai.local`)
 
-### 2. Cài đặt Cổng thông tin (Portal)
+### 2. Cài đặt Web Portal
 ```bash
-# Di chuyển vào thư mục portal
-cd sentinelad_portal
+# 1. Clone repository
+git clone https://github.com/HoangTranVietKhai11/SentinelAD---Khai-Technology-Intelligent-Enterprise-Portal.git
+cd "SentinelAD---Khai-Technology-Intelligent-Enterprise-Portal"
 
-# Cài đặt các thư viện cần thiết
+# 2. Cài đặt thư viện
+cd sentinelad_portal
 pip install -r requirements.txt
 
-# Chạy migrations cơ sở dữ liệu
+# 3. Tạo file cấu hình môi trường .env (dựa theo .env.example)
+cp ../.env.example .env
+
+# 4. Chạy migration
 python manage.py migrate
 
-# Đồng bộ dữ liệu thực tế từ Active Directory DC-01
+# 5. Đồng bộ dữ liệu thực tế từ Active Directory DC-01
 python manage.py sync_ad
 
-# Khởi chạy máy chủ Web
+# 6. Khởi động Web Server
 python manage.py runserver 0.0.0.0:80
 ```
 
-### 3. Khởi chạy Cụm Giám sát (Monitoring Stack)
+### 3. Khởi động Cụm Giám sát (Monitoring)
 ```bash
-# Di chuyển vào thư mục monitoring
-cd monitoring
-
-# Khởi động Prometheus, Loki, Promtail, Grafana
+cd ../monitoring
 docker compose up -d
 ```
 
-### 4. Truy cập dịch vụ
-* **Cổng thông tin nội bộ:** `http://intranet.khai.local` (hoặc `http://localhost`)
-* **Grafana Observability:** `http://grafana.khai.local:3000` (hoặc `http://localhost:3000`)
+### 4. Địa chỉ truy cập
+* **Web Portal nội bộ:** `http://intranet.khai.local` (hoặc `http://localhost`)
+* **Grafana Monitoring:** `http://localhost:3000` (User: `admin` / Pass: `admin`)
 * **Prometheus Metrics:** `http://localhost:9090`
 
 ---
 
-## 👥 Tác giả (Author)
+## 👤 Thông tin tác giả
 
-* **Hoàng Trần Việt Khải** - *Lead Engineer & System Administrator*
-* **Dự án:** *SentinelAD - Khai Technology Intelligent Enterprise Portal*
-* **Tổ chức:** *Khai Technology (`khai.local`)*
-
----
-
-*© 2026 Khai Technology. All rights reserved.*
+* **Họ và tên:** Hoàng Trần Việt Khải
+* **Dự án:** SentinelAD - Khai Technology Enterprise Portal
+* **Domain nội bộ:** `khai.local` · Máy chủ: `DC-01 (192.168.101.10)`
