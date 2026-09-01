@@ -123,6 +123,14 @@ Mô hình diễn tập thực tế được thực hiện từ máy **Linux (Att
   ```
 * **Kết quả:** Xác định chính xác các dịch vụ đang mở và các phản hồi HTTP status code.
 
+#### 5. Kiểm thử Tấn công Giữ kết nối Cạn kiệt Tài nguyên (Slowloris Attack)
+* **Công cụ:** `SlowHTTPTest`
+* **Lệnh thực thi:**
+  ```bash
+  slowhttptest -c 200 -H -g -o slowloris -i 10 -r 200 -t GET -u http://192.168.101.7/ -l 60
+  ```
+* **Kết quả:** Duy trì thành công 200 kết nối chậm liên tục trong 60 giây, kiểm tra độ ổn định của Web Server và khả năng phát hiện luồng kết nối bất thường trên hệ thống giám sát.
+
 ---
 
 ## 🏗️ Sơ đồ kiến trúc & Luồng hoạt động
