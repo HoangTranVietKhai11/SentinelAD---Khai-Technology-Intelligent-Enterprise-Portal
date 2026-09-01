@@ -48,6 +48,18 @@ Cấu hình Scope Options cấp phát mạng tự động: `Option 003 Router` (
 Kích hoạt thành công dịch vụ VPN trên máy chủ `DC-01 (local)` với đầy đủ các cổng bảo mật: `WAN Miniport (IKEv2)`, `WAN Miniport (L2TP)`, `WAN Miniport (SSTP)` và `WAN Miniport (PPTP)` sẵn sàng nhận kết nối an toàn từ xa.
 ![VPN Server](docs/screenshots/server_rras.png)
 
+#### 5. Group Policy: Chính sách Mật khẩu (Password Policy)
+Thiết lập chính sách bảo mật toàn miền: Độ dài mật khẩu tối thiểu 12 ký tự (Minimum password length), Bắt buộc độ phức tạp (Password complexity Enabled), Thời hạn tối đa 90 ngày (Maximum password age).
+![GPO Password Policy](docs/screenshots/server_gpo_password.png)
+
+#### 6. Group Policy: Chính sách Khóa tài khoản (Account Lockout Policy)
+Thiết lập quy định phòng chống tấn công dò quét mật khẩu (Brute-force): Tự động khóa tài khoản sau 5 lần nhập sai liên tiếp (Account lockout threshold: 5 invalid logon attempts) trong 30 phút.
+![GPO Account Lockout Policy](docs/screenshots/server_gpo_lockout.png)
+
+#### 7. Event Viewer: Nhật ký Sự kiện An ninh (Security Audit Logs)
+Máy chủ ghi nhận đầy đủ các sự kiện an ninh quan trọng: Event 4624 (Logon thành công qua LDAP), Event 4634 (Logoff), Event 4672 (Đặc quyền Administrator) làm nguồn dữ liệu cho AI Analyzer và Grafana/Loki.
+![Event Viewer](docs/screenshots/server_event_viewer.png)
+
 ---
 
 ## 🏗️ Sơ đồ kiến trúc & Luồng hoạt động
@@ -70,6 +82,7 @@ Kích hoạt thành công dịch vụ VPN trên máy chủ `DC-01 (local)` với
        │                                      - Active Directory (khai.local)
        │                                      - DNS Server & DHCP Server
        │                                      - Routing & Remote Access (VPN)
+       │                                      - Group Policy Objects (GPO)
        │
        ├── 4. Phân tích an ninh (AI Analyzer - Llama 3.1 qua Groq API)
        ├── 5. Cảnh báo xâm nhập thời gian thực qua Telegram Bot
