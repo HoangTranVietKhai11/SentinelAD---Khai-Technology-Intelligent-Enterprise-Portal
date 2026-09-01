@@ -1,5 +1,20 @@
 # SentinelAD - Khai Technology Enterprise Portal & Infrastructure Observability
 
+<p align="left">
+  <img src="https://img.shields.io/badge/Python_3.13-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/Django_5.1-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django" />
+  <img src="https://img.shields.io/badge/Windows_Server_2022-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Windows Server" />
+  <img src="https://img.shields.io/badge/Active_Directory-0078D4?style=for-the-badge&logo=microsoft&logoColor=white" alt="Active Directory" />
+  <img src="https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white" alt="Prometheus" />
+  <img src="https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white" alt="Grafana" />
+  <img src="https://img.shields.io/badge/Grafana_Loki-F46800?style=for-the-badge&logo=grafana&logoColor=white" alt="Grafana Loki" />
+  <img src="https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Debian_Linux-A81D33?style=for-the-badge&logo=debian&logoColor=white" alt="Debian" />
+  <img src="https://img.shields.io/badge/Llama_3.1_AI-0467DF?style=for-the-badge&logo=meta&logoColor=white" alt="Llama 3.1" />
+  <img src="https://img.shields.io/badge/Telegram_Bot-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram" />
+  <img src="https://img.shields.io/badge/Bootstrap_5-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white" alt="Bootstrap 5" />
+</p>
+
 Hệ thống Cổng thông tin nội bộ (Enterprise Intranet Portal) tích hợp quản trị định danh người dùng tập trung qua Active Directory (Windows Server 2022) và cụm giám sát an toàn hạ tầng theo thời gian thực (Prometheus, Grafana, Loki, AI Log Analyzer, Telegram Notification Service).
 
 ---
