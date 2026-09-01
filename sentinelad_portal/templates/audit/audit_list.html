@@ -1,0 +1,35 @@
+﻿{% extends 'base.html' %}
+{% block title %}Audit Logs - SentinelAD{% endblock %}
+{% block page_heading %}Audit Logs{% endblock %}
+{% block nav_audit %}active{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h1>Audit Logs</h1><p>Nhật ký hoạt động hệ thống (phục vụ Grafana/Loki)</p></div>
+  <form method="GET" class="filter-bar">
+    <div class="search-bar"><i class="fas fa-search search-icon"></i><input type="text" name="q" placeholder="Tìm kiếm user, IP..." value="{{ query }}"></div>
+    <select name="action" class="form-select"><option value="">Tất cả hành động</option>{% for k,v in action_choices %}<option value="{{ k }}" {% if action_filter == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+    <button type="submit" class="btn-sentinel btn-secondary-sentinel">Lọc</button>
+  </form>
+</div>
+<div class="card">
+  <div style="overflow-x:auto">
+    <table class="sentinel-table">
+      <thead><tr><th>Thời gian</th><th>Người dùng</th><th>Hành động</th><th>Đối tượng</th><th>Chi tiết</th><th>IP</th></tr></thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text-muted);white-space:nowrap">{{ log.timestamp|date:"d/m/Y H:i:s" }}</td>
+          <td><span class="mono" style="color:var(--accent-blue)">{{ log.username }}</span></td>
+          <td><span class="log-{{ log.action|lower }}">{{ log.get_action_display }}</span></td>
+          <td style="font-size:12px">{% if log.resource_type %}<span style="color:var(--text-muted)">{{ log.resource_type }}</span> {{ log.resource_name|truncatechars:30 }}{% endif %}</td>
+          <td style="font-size:12px;color:var(--text-secondary)">{{ log.description|truncatechars:60 }}</td>
+          <td class="mono" style="font-size:11px;color:var(--text-muted)">{{ log.source_ip|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">📋</div><h3>Chưa có log nào</h3></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

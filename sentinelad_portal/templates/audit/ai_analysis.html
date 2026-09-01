@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+
+{% block nav_ai_analysis %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+    .markdown-body {
+        color: #e2e8f0;
+    }
+    .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4, .markdown-body h5, .markdown-body h6, .markdown-body strong {
+        color: #f8fafc;
+    }
+    .markdown-body table {
+        color: #e2e8f0;
+    }
+    .markdown-body th, .markdown-body td {
+        border-color: #334155;
+    }
+    .card {
+        background-color: var(--surface, #1e293b);
+        color: #e2e8f0;
+    }
+    .card-title, .card-subtitle {
+        color: #f8fafc;
+    }
+    .text-muted {
+        color: #94a3b8 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-robot text-primary me-2"></i>AI Security Analysis</h1>
+    <div class="d-flex align-items-center gap-2">
+        {% if grafana_status == 'connected' %}
+        <span class="badge bg-success d-inline-flex align-items-center gap-1">
+            <i class="fas fa-circle" style="font-size:6px"></i> Grafana Connected
+        </span>
+        {% else %}
+        <span class="badge bg-danger d-inline-flex align-items-center gap-1">
+            <i class="fas fa-circle" style="font-size:6px"></i> Grafana Disconnected
+        </span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Analysis Mode Selection -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-file-alt text-info me-2"></i>Audit Log Analysis</h5>
+                <p class="card-text text-muted small">
+                    Phân tích 100 dòng audit log gần nhất từ file local. Tìm kiếm hành vi đăng nhập bất thường, 
+                    hoạt động đáng ngờ và rủi ro bảo mật.
+                </p>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="mode" value="logs">
+                    <button type="submit" class="btn btn-outline-primary d-inline-flex align-items-center">
+                        <i class="fas fa-search me-2"></i> Analyze Logs
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 h-100" style="border-left: 3px solid #0d6efd !important;">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-shield-alt text-primary me-2"></i>Full System Analysis
+                    <span class="badge bg-primary ms-2" style="font-size:10px">NEW</span>
+                </h5>
+                <p class="card-text text-muted small">
+                    Phân tích toàn diện kết hợp <strong>Prometheus</strong> (CPU, RAM, Disk, Services DC-01) + 
+                    <strong>Loki</strong> (audit logs) + <strong>Local Logs</strong>. Yêu cầu Grafana đang chạy.
+                </p>
+                <form method="post" id="full-analysis-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="mode" value="full">
+                    <div class="d-flex align-items-center gap-3">
+                        <button type="submit" class="btn btn-primary d-inline-flex align-items-center"
+                                {% if grafana_status != 'connected' %}disabled{% endif %}>
+                            <i class="fas fa-satellite-dish me-2"></i> Full System Analysis
+                        </button>
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" id="autoRefreshToggle" {% if grafana_status != 'connected' %}disabled{% endif %}>
+                            <label class="form-check-label text-muted small" for="autoRefreshToggle">Auto (1m)</label>
+                        </div>
+                    </div>
+                    {% if grafana_status != 'connected' %}
+                    <small class="text-danger mt-1 d-block">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Grafana chưa kết nối
+                    </small>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if analysis_result %}
+<!-- Metrics Snapshot (for Full System Analysis) -->
+{% if analysis_mode == 'full' and metrics_snapshot %}
+<div class="row mb-4">
+    {% if metrics_snapshot.cpu_usage != None %}
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body py-3">
+                <div class="text-muted small mb-1"><i class="fas fa-microchip me-1"></i>CPU</div>
+                <div class="h3 mb-0 {% if metrics_snapshot.cpu_usage > 80 %}text-danger{% elif metrics_snapshot.cpu_usage > 60 %}text-warning{% else %}text-success{% endif %}">
+                    {{ metrics_snapshot.cpu_usage }}%
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if metrics_snapshot.memory_usage != None %}
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body py-3">
+                <div class="text-muted small mb-1"><i class="fas fa-memory me-1"></i>RAM</div>
+                <div class="h3 mb-0 {% if metrics_snapshot.memory_usage > 85 %}text-danger{% elif metrics_snapshot.memory_usage > 70 %}text-warning{% else %}text-success{% endif %}">
+                    {{ metrics_snapshot.memory_usage }}%
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if metrics_snapshot.disk_usage_c != None %}
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body py-3">
+                <div class="text-muted small mb-1"><i class="fas fa-hdd me-1"></i>Disk C:</div>
+                <div class="h3 mb-0 {% if metrics_snapshot.disk_usage_c > 90 %}text-danger{% elif metrics_snapshot.disk_usage_c > 75 %}text-warning{% else %}text-success{% endif %}">
+                    {{ metrics_snapshot.disk_usage_c }}%
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if log_counts %}
+    <div class="col-md-3 mb-3">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body py-3">
+                <div class="text-muted small mb-1"><i class="fas fa-list me-1"></i>Events (24h)</div>
+                <div class="h3 mb-0 text-info">{{ log_counts.total_events }}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if log_counts %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-body py-2">
+                <div class="d-flex justify-content-around text-center flex-wrap">
+                    <div class="px-3">
+                        <small class="text-muted">Login Events</small>
+                        <div class="fw-bold">{{ log_counts.login_events }}</div>
+                    </div>
+                    <div class="px-3">
+                        <small class="text-muted">Failed Events</small>
+                        <div class="fw-bold {% if log_counts.failed_events > 10 %}text-danger{% endif %}">{{ log_counts.failed_events }}</div>
+                    </div>
+                    <div class="px-3">
+                        <small class="text-muted">Delete Ops</small>
+                        <div class="fw-bold {% if log_counts.delete_events > 5 %}text-warning{% endif %}">{{ log_counts.delete_events }}</div>
+                    </div>
+                    <div class="px-3">
+                        <small class="text-muted">Local Logs</small>
+                        <div class="fw-bold">{{ log_counts.local_logs }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
+<!-- Analysis Result -->
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <h6 class="card-subtitle mb-3 text-muted">
+            <i class="fas fa-check-circle text-success me-1"></i>
+            Analysis Complete
+            {% if analysis_mode == 'full' %}
+            <span class="badge bg-primary ms-2">Full System</span>
+            {% else %}
+            <span class="badge bg-info ms-2">Audit Logs</span>
+            {% endif %}
+        </h6>
+        <div class="markdown-body" style="line-height: 1.7;">
+            {{ analysis_result|safe }}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const toggle = document.getElementById("autoRefreshToggle");
+        const form = document.getElementById("full-analysis-form");
+        if (!toggle || !form) return;
+        
+        // Restore state from localStorage
+        if (localStorage.getItem("ai_auto_refresh") === "true" && !toggle.disabled) {
+            toggle.checked = true;
+            startAutoRefresh();
+        }
+
+        toggle.addEventListener("change", function() {
+            localStorage.setItem("ai_auto_refresh", this.checked);
+            if (this.checked) {
+                startAutoRefresh();
+            } else {
+                if (window.autoRefreshInterval) clearInterval(window.autoRefreshInterval);
+            }
+        });
+
+        function startAutoRefresh() {
+            if (window.autoRefreshInterval) clearInterval(window.autoRefreshInterval);
+            window.autoRefreshInterval = setInterval(() => {
+                form.submit();
+            }, 60000); // 1 minute
+        }
+    });
+</script>
+{% endblock %}
+
+{% endblock %}
