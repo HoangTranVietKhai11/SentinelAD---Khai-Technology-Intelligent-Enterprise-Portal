@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Thông báo - Khai Technology{% endblock %}
+{% block page_heading %}Bảng tin Thông báo{% endblock %}
+{% block nav_announcements %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1><i class="fas fa-bullhorn" style="color:var(--accent-orange);margin-right:8px"></i>Bảng tin & Cập nhật</h1>
+    <p>Thông tin nội bộ, sự kiện và tin tức mới nhất của Khai Technology</p>
+  </div>
+  {% if user_role in 'administrator,hr_manager' %}
+  <div class="page-actions">
+    <a href="{% url 'announcement_create' %}" class="btn-sentinel btn-primary-sentinel">
+      <i class="fas fa-plus"></i> Đăng thông báo
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Category Filters -->
+<div class="filter-bar" style="margin-bottom:20px">
+  <a href="{% url 'announcement_list' %}" class="btn-sentinel {% if not selected_category %}btn-primary-sentinel{% else %}btn-secondary-sentinel{% endif %} btn-sm">
+    <i class="fas fa-globe"></i> Tất cả
+  </a>
+  {% for cat_key, cat_label in category_choices %}
+  <a href="?category={{ cat_key }}" class="btn-sentinel {% if selected_category == cat_key %}btn-primary-sentinel{% else %}btn-secondary-sentinel{% endif %} btn-sm">
+    {% if cat_key == 'new_employee' %}<i class="fas fa-user-plus"></i>
+    {% elif cat_key == 'company_update' %}<i class="fas fa-rocket"></i>
+    {% elif cat_key == 'event' %}<i class="fas fa-calendar-star"></i>
+    {% elif cat_key == 'policy' %}<i class="fas fa-file-alt"></i>
+    {% else %}<i class="fas fa-info-circle"></i>{% endif %}
+    {{ cat_label }}
+  </a>
+  {% endfor %}
+</div>
+
+<div style="max-width:850px;display:flex;flex-direction:column;gap:12px">
+  {% for ann in announcements %}
+  <div class="announcement-card {{ ann.level }}" style="{% if ann.pinned %}border: 1px solid var(--accent-orange);{% endif %}">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        {% if ann.pinned %}
+        <span class="level-important" style="font-size:10px;padding:2px 8px"><i class="fas fa-thumbtack"></i> Ghim</span>
+        {% endif %}
+        <span class="meeting-type-badge {{ ann.category|default:'other' }}">
+          {% if ann.category == 'new_employee' %}<i class="fas fa-user-plus"></i> Nhân viên mới
+          {% elif ann.category == 'company_update' %}<i class="fas fa-rocket"></i> Cập nhật công ty
+          {% elif ann.category == 'event' %}<i class="fas fa-calendar-star"></i> Sự kiện
+          {% elif ann.category == 'policy' %}<i class="fas fa-file-alt"></i> Chính sách
+          {% else %}<i class="fas fa-bullhorn"></i> Thông thường{% endif %}
+        </span>
+        {% if ann.level == 'urgent' %}
+        <span class="level-urgent" style="font-size:10px"><i class="fas fa-exclamation-circle"></i> Khẩn cấp</span>
+        {% elif ann.level == 'important' %}
+        <span class="level-important" style="font-size:10px"><i class="fas fa-star"></i> Quan trọng</span>
+        {% endif %}
+        <h3 style="font-size:15px;font-weight:600;margin:0;color:var(--text-primary)">{{ ann.title }}</h3>
+      </div>
+      {% if user_role == 'administrator' or user == ann.created_by %}
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <a href="{% url 'announcement_edit' ann.pk %}" class="btn-sentinel btn-secondary-sentinel btn-sm" title="Sửa"><i class="fas fa-edit"></i></a>
+        <a href="{% url 'announcement_delete' ann.pk %}" class="btn-sentinel btn-danger-sentinel btn-sm" title="Xoá"><i class="fas fa-trash"></i></a>
+      </div>
+      {% endif %}
+    </div>
+
+    <p style="color:var(--text-secondary);font-size:13.5px;line-height:1.7;margin-bottom:12px;white-space:pre-wrap">{{ ann.content }}</p>
+
+    <div style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:14px;border-top:1px solid var(--border-light);padding-top:8px">
+      <span><i class="fas fa-user"></i> {{ ann.created_by.get_full_name|default:ann.created_by.username }}</span>
+      <span><i class="fas fa-clock"></i> {{ ann.created_at|date:"d/m/Y H:i" }} ({{ ann.created_at|timesince }} trước)</span>
+    </div>
+  </div>
+  {% empty %}
+  <div class="empty-state">
+    <div class="empty-state-icon">📢</div>
+    <h3>Không có thông báo nào</h3>
+    <p>Chưa có bài đăng nào trong danh mục này.</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

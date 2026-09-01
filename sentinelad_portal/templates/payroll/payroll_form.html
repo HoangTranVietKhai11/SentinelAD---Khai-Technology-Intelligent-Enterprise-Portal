@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}Tạo phiếu lương - Khai Technology{% endblock %}
+{% block page_heading %}Tạo phiếu lương{% endblock %}
+{% block nav_payroll %}active{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-sentinel">
+  <a href="{% url 'payroll_list' %}"><i class="fas fa-wallet"></i> Thông báo lương</a>
+  <i class="fas fa-chevron-right" style="font-size:9px"></i>
+  <span>Tạo mới</span>
+</div>
+
+<div class="card" style="max-width:650px">
+  <div class="card-header">
+    <span class="card-title"><i class="fas fa-plus-circle" style="margin-right:8px;color:var(--accent-green)"></i>Tạo phiếu lương mới</span>
+  </div>
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div>
+          <label class="form-label">Nhân viên *</label>
+          <select name="employee" class="form-select" required>
+            <option value="">-- Chọn nhân viên --</option>
+            {% for u in users %}
+            <option value="{{ u.pk }}">{{ u.get_full_name|default:u.username }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Kỳ lương *</label>
+          <input type="text" name="period" class="form-control" placeholder="Ví dụ: Tháng 8/2026" required>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div>
+          <label class="form-label">Lương cơ bản (VNĐ) *</label>
+          <input type="number" name="base_salary" class="form-control" placeholder="15000000" required id="baseSalary" oninput="calcNet()">
+        </div>
+        <div>
+          <label class="form-label">Phụ cấp (VNĐ)</label>
+          <input type="number" name="allowance" class="form-control" value="0" id="allowance" oninput="calcNet()">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div>
+          <label class="form-label">Thưởng (VNĐ)</label>
+          <input type="number" name="bonus" class="form-control" value="0" id="bonus" oninput="calcNet()">
+        </div>
+        <div>
+          <label class="form-label">Khấu trừ - BHXH, thuế... (VNĐ)</label>
+          <input type="number" name="deduction" class="form-control" value="0" id="deduction" oninput="calcNet()">
+        </div>
+      </div>
+      <div style="margin-bottom:16px;padding:16px;background:var(--bg-tertiary);border-radius:var(--radius);border:1px solid var(--border)">
+        <label class="form-label" style="color:var(--accent-green)"><i class="fas fa-money-bill-wave"></i> Thực lãnh (VNĐ)</label>
+        <input type="number" name="net_salary" class="form-control" id="netSalary" style="font-size:18px;font-weight:700;color:var(--accent-green)" readonly>
+      </div>
+      <div style="margin-bottom:16px">
+        <label class="form-label">Ghi chú</label>
+        <textarea name="note" class="form-control" rows="2" placeholder="Ghi chú thêm..."></textarea>
+      </div>
+      <div style="margin-bottom:20px">
+        <label class="form-label">Trạng thái</label>
+        <select name="status" class="form-select">
+          <option value="draft">Nháp (chưa gửi)</option>
+          <option value="sent" selected>Gửi ngay cho nhân viên</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button type="submit" class="btn-sentinel btn-primary-sentinel"><i class="fas fa-save"></i> Tạo phiếu lương</button>
+        <a href="{% url 'payroll_list' %}" class="btn-sentinel btn-secondary-sentinel">Huỷ</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function calcNet() {
+  const base = parseInt(document.getElementById('baseSalary').value) || 0;
+  const allow = parseInt(document.getElementById('allowance').value) || 0;
+  const bon = parseInt(document.getElementById('bonus').value) || 0;
+  const ded = parseInt(document.getElementById('deduction').value) || 0;
+  document.getElementById('netSalary').value = base + allow + bon - ded;
+}
+</script>
+{% endblock %}

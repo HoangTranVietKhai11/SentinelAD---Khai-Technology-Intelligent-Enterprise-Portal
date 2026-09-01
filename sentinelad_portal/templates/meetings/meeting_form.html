@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}{% if is_edit %}Sửa cuộc họp{% else %}Tạo cuộc họp{% endif %} - Khai Technology{% endblock %}
+{% block page_heading %}{% if is_edit %}Sửa cuộc họp{% else %}Tạo cuộc họp mới{% endif %}{% endblock %}
+{% block nav_meetings %}active{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-sentinel">
+  <a href="{% url 'meeting_list' %}"><i class="fas fa-calendar-alt"></i> Lịch họp</a>
+  <i class="fas fa-chevron-right" style="font-size:9px"></i>
+  <span>{% if is_edit %}Sửa{% else %}Tạo mới{% endif %}</span>
+</div>
+
+<div class="card" style="max-width:700px">
+  <div class="card-header">
+    <span class="card-title"><i class="fas fa-{% if is_edit %}edit{% else %}plus-circle{% endif %}" style="margin-right:8px;color:var(--accent-cyan)"></i>{% if is_edit %}Chỉnh sửa cuộc họp{% else %}Cuộc họp mới{% endif %}</span>
+  </div>
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      <div style="margin-bottom:16px">
+        <label class="form-label">Tiêu đề cuộc họp *</label>
+        <input type="text" name="title" class="form-control" value="{% if meeting %}{{ meeting.title }}{% endif %}" required placeholder="Ví dụ: Họp Sprint Review Q3">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div>
+          <label class="form-label">Loại cuộc họp</label>
+          <select name="meeting_type" class="form-select">
+            {% for key, label in meeting_types %}
+            <option value="{{ key }}" {% if meeting and meeting.meeting_type == key %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Mức độ</label>
+          <select name="priority" class="form-select">
+            {% for key, label in priority_choices %}
+            <option value="{{ key }}" {% if meeting and meeting.priority == key %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <label class="form-label">Địa điểm</label>
+        <input type="text" name="location" class="form-control" value="{% if meeting %}{{ meeting.location }}{% endif %}" placeholder="Ví dụ: Phòng họp A / Google Meet / Zoom">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div>
+          <label class="form-label">Bắt đầu *</label>
+          <input type="datetime-local" name="start_time" class="form-control" value="{% if meeting %}{{ meeting.start_time|date:'Y-m-d\TH:i' }}{% endif %}" required>
+        </div>
+        <div>
+          <label class="form-label">Kết thúc *</label>
+          <input type="datetime-local" name="end_time" class="form-control" value="{% if meeting %}{{ meeting.end_time|date:'Y-m-d\TH:i' }}{% endif %}" required>
+        </div>
+      </div>
+      <div style="margin-bottom:16px">
+        <label class="form-label">Mô tả / Agenda</label>
+        <textarea name="description" class="form-control" rows="3" placeholder="Nội dung chính, agenda cuộc họp...">{% if meeting %}{{ meeting.description }}{% endif %}</textarea>
+      </div>
+      <div style="margin-bottom:16px">
+        <label class="form-label">Người tham dự</label>
+        <select name="attendees" class="form-select" multiple style="min-height:120px">
+          {% for u in users %}
+          <option value="{{ u.pk }}" {% if u.pk in current_attendee_ids %}selected{% endif %}>
+            {{ u.get_full_name|default:u.username }} ({{ u.username }})
+          </option>
+          {% endfor %}
+        </select>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Giữ Ctrl để chọn nhiều người</div>
+      </div>
+      <div style="margin-bottom:20px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-secondary)">
+          <input type="checkbox" name="is_recurring" {% if meeting and meeting.is_recurring %}checked{% endif %}> Lặp lại hàng tuần
+        </label>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button type="submit" class="btn-sentinel btn-primary-sentinel">
+          <i class="fas fa-{% if is_edit %}save{% else %}plus{% endif %}"></i> {% if is_edit %}Lưu thay đổi{% else %}Tạo cuộc họp{% endif %}
+        </button>
+        <a href="{% url 'meeting_list' %}" class="btn-sentinel btn-secondary-sentinel">Huỷ</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

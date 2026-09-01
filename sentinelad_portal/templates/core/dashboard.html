@@ -1,0 +1,326 @@
+{% extends 'base.html' %}
+{% block title %}Trang chủ - Khai Technology{% endblock %}
+{% block page_heading %}Trang chủ{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner -->
+<div class="welcome-banner">
+  <div class="welcome-content">
+    <div class="welcome-text">
+      <div class="welcome-greeting">Xin chào, {{ user.get_full_name|default:user.username }}! 👋</div>
+      <div class="welcome-subtitle">Chào mừng bạn đến với Cổng thông tin nội bộ <strong>Khai Technology</strong></div>
+      <div class="welcome-date"><i class="fas fa-calendar"></i> {{ current_time|date:"l, d/m/Y" }} · <i class="fas fa-clock"></i> {{ current_time|date:"H:i" }}</div>
+    </div>
+    <div class="welcome-stats-mini">
+      <div class="welcome-stat-item">
+        <span class="welcome-stat-number">{{ upcoming_meetings|length }}</span>
+        <span class="welcome-stat-label">Cuộc họp hôm nay</span>
+      </div>
+      <div class="welcome-stat-item">
+        <span class="welcome-stat-number">{{ open_tickets }}</span>
+        <span class="welcome-stat-label">Tickets đang mở</span>
+      </div>
+      {% if unread_payroll > 0 %}
+      <div class="welcome-stat-item payroll-alert">
+        <span class="welcome-stat-number">{{ unread_payroll }}</span>
+        <span class="welcome-stat-label">Lương chưa xem</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Pinned Announcements -->
+{% if pinned_announcements %}
+<div style="margin-bottom:20px">
+  {% for ann in pinned_announcements %}
+  <div class="pinned-announcement {{ ann.level }}">
+    <div style="display:flex;align-items:center;gap:8px">
+      <i class="fas fa-thumbtack" style="color:var(--accent-orange)"></i>
+      <span style="font-weight:600;font-size:13.5px">{{ ann.title }}</span>
+      {% if ann.level == 'urgent' %}<span class="level-urgent" style="font-size:10px"><i class="fas fa-exclamation-circle"></i> Khẩn</span>{% endif %}
+      {% if ann.level == 'important' %}<span class="level-important" style="font-size:10px"><i class="fas fa-star"></i> Quan trọng</span>{% endif %}
+    </div>
+    <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;margin-left:24px">{{ ann.content|truncatechars:150 }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Stats Grid -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px">
+  <div class="stat-card blue">
+    <div class="stat-icon blue"><i class="fas fa-users" style="color:var(--accent-blue)"></i></div>
+    <div class="stat-value">{{ total_employees }}</div>
+    <div class="stat-label">Nhân viên đang làm việc</div>
+    <div class="stat-sub"><i class="fas fa-building"></i> {{ total_departments }} phòng ban</div>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-icon green"><i class="fas fa-calendar-check" style="color:var(--accent-green)"></i></div>
+    <div class="stat-value">{{ week_meetings.count }}</div>
+    <div class="stat-label">Cuộc họp tuần này</div>
+    <div class="stat-sub"><i class="fas fa-clock"></i> {{ upcoming_meetings|length }} hôm nay</div>
+  </div>
+  <div class="stat-card orange">
+    <div class="stat-icon orange"><i class="fas fa-ticket-alt" style="color:var(--accent-orange)"></i></div>
+    <div class="stat-value">{{ open_tickets }}</div>
+    <div class="stat-label">Tickets đang mở</div>
+    <div class="stat-sub"><i class="fas fa-check-circle"></i> {{ resolved_tickets }} đã giải quyết</div>
+  </div>
+  <div class="stat-card purple">
+    <div class="stat-icon purple"><i class="fas fa-bullhorn" style="color:var(--accent-purple)"></i></div>
+    <div class="stat-value">{{ unread_announcements }}</div>
+    <div class="stat-label">Thông báo mới</div>
+    <div class="stat-sub"><i class="fas fa-thumbtack"></i> {{ pinned_announcements|length }} được ghim</div>
+  </div>
+</div>
+
+<!-- Main content: 2 columns -->
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-bottom:20px">
+  <!-- Left column -->
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <!-- Upcoming Meetings -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-calendar-alt" style="margin-right:8px;color:var(--accent-cyan)"></i>Cuộc họp sắp tới</span>
+        <a href="{% url 'meeting_list' %}" class="btn-sentinel btn-secondary-sentinel btn-sm">Xem tất cả</a>
+      </div>
+      <div class="card-body" style="padding:12px">
+        {% for meeting in upcoming_meetings %}
+        <div class="dashboard-meeting-card {{ meeting.priority }}">
+          <div class="dashboard-meeting-time">
+            <div style="font-size:20px;font-weight:800;color:var(--accent-blue)">{{ meeting.start_time|date:"H:i" }}</div>
+            <div style="font-size:10px;color:var(--text-muted)">{{ meeting.start_time|date:"d/m" }}</div>
+          </div>
+          <div style="flex:1">
+            <a href="{% url 'meeting_detail' meeting.pk %}" style="font-size:13.5px;font-weight:600;color:var(--text-primary)">{{ meeting.title }}</a>
+            <div style="display:flex;gap:12px;margin-top:4px;font-size:11px;color:var(--text-muted)">
+              <span><i class="fas fa-user"></i> {{ meeting.organizer.get_full_name|default:meeting.organizer.username }}</span>
+              {% if meeting.location %}<span><i class="fas fa-map-marker-alt"></i> {{ meeting.location }}</span>{% endif %}
+              <span><i class="fas fa-clock"></i> {{ meeting.duration_minutes }}p</span>
+            </div>
+          </div>
+          <span class="meeting-type-badge {{ meeting.meeting_type }}">
+            {% if meeting.meeting_type == 'standup' %}<i class="fas fa-bolt"></i>
+            {% elif meeting.meeting_type == 'team' %}<i class="fas fa-users"></i>
+            {% elif meeting.meeting_type == 'all_hands' %}<i class="fas fa-globe"></i>
+            {% elif meeting.meeting_type == 'client' %}<i class="fas fa-handshake"></i>
+            {% elif meeting.meeting_type == 'review' %}<i class="fas fa-clipboard-check"></i>
+            {% else %}<i class="fas fa-calendar"></i>{% endif %}
+          </span>
+        </div>
+        {% empty %}
+        <div class="empty-state" style="padding:24px">
+          <div class="empty-state-icon" style="font-size:32px">📅</div>
+          <p style="font-size:12px">Không có cuộc họp nào hôm nay.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Announcements Feed -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-bullhorn" style="margin-right:8px;color:var(--accent-orange)"></i>Bảng tin & Cập nhật</span>
+        <a href="{% url 'announcement_list' %}" class="btn-sentinel btn-secondary-sentinel btn-sm">Xem tất cả</a>
+      </div>
+      <div class="card-body" style="padding:0">
+        {% for ann in announcements %}
+        <div class="dashboard-feed-item">
+          <div class="feed-icon">
+            {% if ann.category == 'new_employee' %}<i class="fas fa-user-plus" style="color:var(--accent-green)"></i>
+            {% elif ann.category == 'company_update' %}<i class="fas fa-rocket" style="color:var(--accent-blue)"></i>
+            {% elif ann.category == 'event' %}<i class="fas fa-calendar-star" style="color:var(--accent-purple)"></i>
+            {% elif ann.category == 'policy' %}<i class="fas fa-file-alt" style="color:var(--accent-orange)"></i>
+            {% else %}<i class="fas fa-bullhorn" style="color:var(--text-muted)"></i>{% endif %}
+          </div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600;color:var(--text-primary)">{{ ann.title|truncatechars:60 }}</div>
+            <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px">{{ ann.content|truncatechars:100 }}</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:4px">
+              <i class="fas fa-clock"></i> {{ ann.created_at|timesince }} trước
+              · {{ ann.created_by.get_full_name|default:ann.created_by.username }}
+              {% if ann.pinned %}<span style="color:var(--accent-orange);margin-left:6px"><i class="fas fa-thumbtack"></i> Ghim</span>{% endif %}
+            </div>
+          </div>
+          <div>
+            {% if ann.level == 'urgent' %}<span class="level-urgent" style="font-size:10px">Khẩn</span>
+            {% elif ann.level == 'important' %}<span class="level-important" style="font-size:10px">Quan trọng</span>{% endif %}
+          </div>
+        </div>
+        {% empty %}
+        <div class="empty-state" style="padding:24px">
+          <p style="font-size:12px;color:var(--text-muted)">Không có thông báo mới.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right column -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <!-- New Employees -->
+    {% if new_employees %}
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-user-plus" style="margin-right:8px;color:var(--accent-green)"></i>Nhân viên mới</span>
+      </div>
+      <div class="card-body" style="padding:12px">
+        {% for emp in new_employees %}
+        <div class="new-employee-card">
+          <div class="new-emp-avatar">{{ emp.full_name|first|upper }}</div>
+          <div style="flex:1">
+            <div style="font-size:12.5px;font-weight:600;color:var(--text-primary)">{{ emp.full_name }}</div>
+            <div style="font-size:10.5px;color:var(--text-muted)">{{ emp.position }} · {{ emp.department.name }}</div>
+          </div>
+          <div style="font-size:10px;color:var(--accent-green)"><i class="fas fa-calendar"></i> {{ emp.hire_date|date:"d/m" }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Payroll notification -->
+    {% if latest_payroll %}
+    <div class="card">
+      <div class="card-header" style="background:linear-gradient(135deg, rgba(63,185,80,.06), rgba(47,129,247,.06))">
+        <span class="card-title"><i class="fas fa-wallet" style="margin-right:8px;color:var(--accent-green)"></i>Lương mới nhất</span>
+        {% if not latest_payroll.is_read %}<span class="nav-badge" style="background:var(--accent-green)">Mới</span>{% endif %}
+      </div>
+      <div class="card-body" style="text-align:center;padding:16px">
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase">{{ latest_payroll.period }}</div>
+        <div style="font-size:28px;font-weight:800;color:var(--accent-green);margin:8px 0" class="mono">{{ latest_payroll.net_salary|floatformat:0 }}đ</div>
+        <a href="{% url 'payroll_detail' latest_payroll.pk %}" class="btn-sentinel btn-success-sentinel btn-sm"><i class="fas fa-eye"></i> Xem chi tiết</a>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Activity log -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-stream" style="margin-right:8px;color:var(--accent-blue)"></i>Hoạt động gần đây</span>
+      </div>
+      <div class="card-body" style="padding:0">
+        {% if recent_logs %}
+        <div style="max-height:260px;overflow-y:auto">
+          {% for log in recent_logs %}
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border-light)">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--bg-tertiary);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              {% if log.action == 'LOGIN_SUCCESS' %}<i class="fas fa-sign-in-alt" style="color:var(--accent-green);font-size:10px"></i>
+              {% elif log.action == 'LOGIN_FAILURE' %}<i class="fas fa-times-circle" style="color:var(--accent-red);font-size:10px"></i>
+              {% elif log.action == 'CREATE' %}<i class="fas fa-plus-circle" style="color:var(--accent-blue);font-size:10px"></i>
+              {% elif log.action == 'UPDATE' %}<i class="fas fa-edit" style="color:var(--accent-orange);font-size:10px"></i>
+              {% elif log.action == 'DELETE' %}<i class="fas fa-trash" style="color:var(--accent-red);font-size:10px"></i>
+              {% else %}<i class="fas fa-circle" style="color:var(--text-muted);font-size:10px"></i>{% endif %}
+            </div>
+            <div style="flex:1;overflow:hidden">
+              <div style="font-size:12px;font-weight:500">
+                <span class="mono" style="font-size:11px;color:var(--accent-blue)">{{ log.username }}</span>
+                {{ log.get_action_display }}
+              </div>
+              <div style="font-size:10px;color:var(--text-muted)"><i class="fas fa-clock"></i> {{ log.timestamp|timesince }} trước</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding:24px">
+          <p style="font-size:12px">Chưa có hoạt động nào.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Expiring assets -->
+    {% if expiring_assets %}
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-exclamation-triangle" style="margin-right:8px;color:var(--accent-orange)"></i>Sắp hết bảo hành</span>
+      </div>
+      <div class="card-body" style="padding:12px">
+        {% for asset in expiring_assets %}
+        <div style="padding:6px 0;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:12px;font-weight:600">{{ asset.asset_name|truncatechars:22 }}</div>
+            <div class="mono" style="font-size:10px;color:var(--text-muted)">{{ asset.asset_tag }}</div>
+          </div>
+          <div style="font-size:11px;color:var(--accent-red)">{{ asset.warranty_date|date:"d/m/Y" }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Charts row -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fas fa-server" style="margin-right:8px;color:var(--accent-blue)"></i>Phân loại Tài sản CNTT</span>
+    </div>
+    <div class="card-body">
+      <canvas id="assetChart" height="180"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fas fa-ticket-alt" style="margin-right:8px;color:var(--accent-orange)"></i>Tickets theo Mức ưu tiên</span>
+    </div>
+    <div class="card-body">
+      <canvas id="ticketChart" height="180"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+const chartDefaults = {
+  plugins: { legend: { labels: { color: '#8b949e', font: { family: 'Inter', size: 12 } } } }
+};
+Chart.defaults.color = '#8b949e';
+Chart.defaults.borderColor = '#30363d';
+
+// Asset by type chart
+const assetCtx = document.getElementById('assetChart');
+if (assetCtx) {
+  new Chart(assetCtx, {
+    type: 'doughnut',
+    data: {
+      labels: [{% for k,v in asset_types.items %}'{{ k }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+      datasets: [{
+        data: [{% for k,v in asset_types.items %}{{ v }}{% if not forloop.last %},{% endif %}{% endfor %}],
+        backgroundColor: ['#2f81f7','#3fb950','#d29922','#da3633','#a371f7','#39d353','#f78166','#79c0ff'],
+        borderWidth: 2, borderColor: '#1c2128',
+      }]
+    },
+    options: { ...chartDefaults, cutout: '65%', responsive: true }
+  });
+}
+
+// Ticket priority chart
+const ticketCtx = document.getElementById('ticketChart');
+if (ticketCtx) {
+  new Chart(ticketCtx, {
+    type: 'bar',
+    data: {
+      labels: [{% for k,v in ticket_priorities.items %}'{{ k }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+      datasets: [{
+        label: 'Tickets đang mở',
+        data: [{% for k,v in ticket_priorities.items %}{{ v }}{% if not forloop.last %},{% endif %}{% endfor %}],
+        backgroundColor: ['#3fb950','#d29922','#f78166','#da3633'],
+        borderRadius: 6, borderSkipped: false,
+      }]
+    },
+    options: {
+      ...chartDefaults, responsive: true,
+      plugins: { ...chartDefaults.plugins, legend: { display: false } },
+      scales: {
+        y: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' }, beginAtZero: true },
+        x: { ticks: { color: '#8b949e' }, grid: { color: 'transparent' } }
+      }
+    }
+  });
+}
+</script>
+{% endblock %}

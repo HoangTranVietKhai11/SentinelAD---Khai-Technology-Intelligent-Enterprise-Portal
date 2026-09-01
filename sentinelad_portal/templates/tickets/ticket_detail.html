@@ -1,0 +1,71 @@
+﻿{% extends 'base.html' %}
+{% block title %}{{ page_title }} - SentinelAD{% endblock %}
+{% block page_heading %}{{ page_title }}{% endblock %}
+{% block nav_tickets %}active{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h1>{{ page_title }}</h1></div>
+  <a href="{% url 'ticket_list' %}" class="btn-sentinel btn-secondary-sentinel"><i class="fas fa-arrow-left"></i> Quay lại</a>
+</div>
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
+  <div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header">
+        <span class="card-title">Ticket #{{ ticket.pk }}</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="priority-badge priority-{{ ticket.priority }}">{{ ticket.get_priority_display }}</span>
+          <span class="badge-status badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <h3 style="font-size:18px;margin-bottom:12px">{{ ticket.title }}</h3>
+        <p style="color:var(--text-secondary);line-height:1.7">{{ ticket.description }}</p>
+        {% if ticket.resolution %}<hr class="divider"><h4 style="font-size:13px;color:var(--accent-green);margin-bottom:8px"><i class="fas fa-check-circle"></i> Giải pháp</h4><p style="color:var(--text-secondary)">{{ ticket.resolution }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Phản hồi ({{ comments.count }})</span></div>
+      <div class="card-body" style="padding:0">
+        {% for comment in comments %}
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border-light)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white">{{ comment.author.username|first|upper }}</div>
+            <strong style="font-size:13px">{{ comment.author.get_full_name|default:comment.author.username }}</strong>
+            <span style="font-size:11px;color:var(--text-muted)">{{ comment.created_at|timesince }} trước</span>
+          </div>
+          <p style="font-size:13.5px;color:var(--text-secondary);margin:0;padding-left:36px">{{ comment.content }}</p>
+        </div>
+        {% empty %}<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">Chưa có phản hồi nào.</div>{% endfor %}
+        <div style="padding:16px">
+          <form method="POST">{% csrf_token %}<textarea name="content" class="form-control" placeholder="Nhập phản hồi..." rows="3" style="margin-bottom:10px"></textarea><button type="submit" class="btn-sentinel btn-primary-sentinel"><i class="fas fa-paper-plane"></i> Gửi phản hồi</button></form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header"><span class="card-title">Thông tin</span></div>
+      <div class="card-body" style="font-size:13px">
+        <div style="margin-bottom:12px"><div style="color:var(--text-muted);font-size:11px;margin-bottom:2px">NGƯỜI TẠO</div>{{ ticket.created_by.get_full_name|default:ticket.created_by.username }}</div>
+        <div style="margin-bottom:12px"><div style="color:var(--text-muted);font-size:11px;margin-bottom:2px">NGƯỜI XỬ LÝ</div>{{ ticket.assigned_to.get_full_name|default:"Chưa phân công" }}</div>
+        <div style="margin-bottom:12px"><div style="color:var(--text-muted);font-size:11px;margin-bottom:2px">TẠO LÚC</div>{{ ticket.created_at|date:"d/m/Y H:i" }}</div>
+        {% if ticket.resolved_at %}<div><div style="color:var(--text-muted);font-size:11px;margin-bottom:2px">GIẢI QUYẾT LÚC</div>{{ ticket.resolved_at|date:"d/m/Y H:i" }}</div>{% endif %}
+      </div>
+    </div>
+    {% if user_role in 'administrator,helpdesk' %}
+    <div class="card">
+      <div class="card-header"><span class="card-title">Cập nhật trạng thái</span></div>
+      <div class="card-body">
+        <form method="POST" action="{% url 'ticket_update_status' ticket.pk %}">
+          {% csrf_token %}
+          <div style="margin-bottom:12px"><label class="form-label">Trạng thái</label><select name="status" class="form-select">{% for k,v in status_choices %}<option value="{{ k }}" {% if ticket.status == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+          <div style="margin-bottom:12px"><label class="form-label">Cách giải quyết</label><textarea name="resolution" class="form-control" rows="2" placeholder="Mô tả cách giải quyết...">{{ ticket.resolution }}</textarea></div>
+          <button type="submit" class="btn-sentinel btn-success-sentinel" style="width:100%"><i class="fas fa-check"></i> Cập nhật</button>
+        </form>
+        <a href="{% url 'ticket_delete' ticket.pk %}" class="btn-sentinel btn-danger-sentinel btn-sm" style="width:100%;margin-top:8px;text-align:center"><i class="fas fa-trash"></i> Xóa ticket</a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

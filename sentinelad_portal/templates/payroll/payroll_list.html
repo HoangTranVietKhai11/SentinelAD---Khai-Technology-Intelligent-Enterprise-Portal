@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Thông báo lương - Khai Technology{% endblock %}
+{% block page_heading %}Thông báo lương{% endblock %}
+{% block nav_payroll %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1><i class="fas fa-wallet" style="color:var(--accent-green);margin-right:8px"></i>Thông báo lương</h1>
+    <p>{% if user_role in 'administrator,hr_manager' %}Quản lý phiếu lương toàn công ty{% else %}Phiếu lương cá nhân của bạn{% endif %}</p>
+  </div>
+  {% if user_role == 'administrator' or user_role == 'hr_manager' %}
+  <div class="page-actions">
+    <a href="{% url 'payroll_create' %}" class="btn-sentinel btn-primary-sentinel">
+      <i class="fas fa-plus"></i> Tạo phiếu lương
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+{% if payrolls %}
+<div class="card">
+  <div class="card-body" style="padding:0">
+    <table class="sentinel-table">
+      <thead>
+        <tr>
+          {% if user_role == 'administrator' or user_role == 'hr_manager' %}<th>Nhân viên</th>{% endif %}
+          <th>Kỳ lương</th>
+          <th>Lương cơ bản</th>
+          <th>Phụ cấp + Thưởng</th>
+          <th>Khấu trừ</th>
+          <th>Thực lãnh</th>
+          <th>Trạng thái</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in payrolls %}
+        <tr>
+          {% if user_role == 'administrator' or user_role == 'hr_manager' %}
+          <td>
+            <div style="font-weight:500">{{ p.employee.get_full_name|default:p.employee.username }}</div>
+          </td>
+          {% endif %}
+          <td><span style="font-weight:600;color:var(--accent-blue)">{{ p.period }}</span></td>
+          <td class="mono" style="font-size:12px">{{ p.base_salary|floatformat:0 }}đ</td>
+          <td class="mono" style="font-size:12px;color:var(--accent-green)">+{{ p.allowance|floatformat:0 }}đ / +{{ p.bonus|floatformat:0 }}đ</td>
+          <td class="mono" style="font-size:12px;color:var(--accent-red)">-{{ p.deduction|floatformat:0 }}đ</td>
+          <td>
+            <span class="mono" style="font-size:13px;font-weight:700;color:var(--accent-green)">{{ p.net_salary|floatformat:0 }}đ</span>
+          </td>
+          <td>
+            {% if p.status == 'sent' %}<span class="badge-status badge-active">Đã gửi</span>
+            {% elif p.status == 'confirmed' %}<span class="badge-status badge-resolved">Xác nhận</span>
+            {% else %}<span class="badge-status badge-inactive">Nháp</span>{% endif %}
+          </td>
+          <td>
+            <a href="{% url 'payroll_detail' p.pk %}" class="btn-sentinel btn-secondary-sentinel btn-sm">
+              <i class="fas fa-eye"></i> Xem
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-icon">💰</div>
+  <h3>Chưa có phiếu lương</h3>
+  <p>{% if user_role == 'administrator' or user_role == 'hr_manager' %}Chưa có phiếu lương nào được tạo.{% else %}Bạn chưa có thông báo lương nào.{% endif %}</p>
+</div>
+{% endif %}
+{% endblock %}

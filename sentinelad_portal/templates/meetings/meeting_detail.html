@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}{{ meeting.title }} - Khai Technology{% endblock %}
+{% block page_heading %}Chi tiết cuộc họp{% endblock %}
+{% block nav_meetings %}active{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-sentinel">
+  <a href="{% url 'meeting_list' %}"><i class="fas fa-calendar-alt"></i> Lịch họp</a>
+  <i class="fas fa-chevron-right" style="font-size:9px"></i>
+  <span>{{ meeting.title|truncatechars:40 }}</span>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
+  <!-- Meeting info -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">
+        <span class="meeting-type-badge {{ meeting.meeting_type }}" style="margin-right:8px">
+          {% if meeting.meeting_type == 'standup' %}<i class="fas fa-bolt"></i>
+          {% elif meeting.meeting_type == 'team' %}<i class="fas fa-users"></i>
+          {% elif meeting.meeting_type == 'all_hands' %}<i class="fas fa-globe"></i>
+          {% elif meeting.meeting_type == 'client' %}<i class="fas fa-handshake"></i>
+          {% elif meeting.meeting_type == 'review' %}<i class="fas fa-clipboard-check"></i>
+          {% elif meeting.meeting_type == 'training' %}<i class="fas fa-graduation-cap"></i>
+          {% else %}<i class="fas fa-calendar"></i>{% endif %}
+          {{ meeting.get_meeting_type_display }}
+        </span>
+        {{ meeting.title }}
+      </span>
+      <div style="display:flex;gap:6px">
+        <a href="{% url 'meeting_update' meeting.pk %}" class="btn-sentinel btn-secondary-sentinel btn-sm"><i class="fas fa-edit"></i> Sửa</a>
+        <form method="post" action="{% url 'meeting_delete' meeting.pk %}" style="display:inline" onsubmit="return confirm('Bạn có chắc chắn muốn xoá cuộc họp này?')">
+          {% csrf_token %}
+          <button type="submit" class="btn-sentinel btn-danger-sentinel btn-sm"><i class="fas fa-trash"></i> Xoá</button>
+        </form>
+      </div>
+    </div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <div>
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px">Thời gian</div>
+          <div style="font-size:14px;font-weight:600"><i class="fas fa-clock" style="color:var(--accent-blue);margin-right:6px"></i>{{ meeting.start_time|date:"d/m/Y H:i" }} - {{ meeting.end_time|date:"H:i" }}</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">{{ meeting.duration_minutes }} phút</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px">Địa điểm</div>
+          <div style="font-size:14px;font-weight:600"><i class="fas fa-map-marker-alt" style="color:var(--accent-green);margin-right:6px"></i>{{ meeting.location|default:"Chưa xác định" }}</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px">Người tổ chức</div>
+          <div style="font-size:14px;font-weight:600"><i class="fas fa-user" style="color:var(--accent-purple);margin-right:6px"></i>{{ meeting.organizer.get_full_name|default:meeting.organizer.username }}</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px">Mức độ</div>
+          <div>
+            {% if meeting.priority == 'urgent' %}<span class="level-urgent"><i class="fas fa-exclamation-circle"></i> Khẩn cấp</span>
+            {% elif meeting.priority == 'important' %}<span class="level-important"><i class="fas fa-star"></i> Quan trọng</span>
+            {% else %}<span class="level-normal">Bình thường</span>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      {% if meeting.description %}
+      <div style="border-top:1px solid var(--border);padding-top:16px">
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:8px">Nội dung / Agenda</div>
+        <div style="font-size:13.5px;color:var(--text-secondary);line-height:1.7;white-space:pre-wrap">{{ meeting.description }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Attendees & RSVP -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <!-- RSVP -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-hand-point-up" style="margin-right:8px;color:var(--accent-orange)"></i>Phản hồi</span>
+      </div>
+      <div class="card-body" style="text-align:center">
+        {% if user_rsvp == 'accepted' %}
+        <div style="color:var(--accent-green);font-size:13px;margin-bottom:8px"><i class="fas fa-check-circle"></i> Bạn đã xác nhận tham gia</div>
+        {% elif user_rsvp == 'declined' %}
+        <div style="color:var(--accent-red);font-size:13px;margin-bottom:8px"><i class="fas fa-times-circle"></i> Bạn đã từ chối</div>
+        {% endif %}
+        <form method="post" style="display:flex;gap:8px;justify-content:center">
+          {% csrf_token %}
+          <button type="submit" name="rsvp" value="accepted" class="btn-sentinel btn-success-sentinel btn-sm"><i class="fas fa-check"></i> Tham gia</button>
+          <button type="submit" name="rsvp" value="declined" class="btn-sentinel btn-danger-sentinel btn-sm"><i class="fas fa-times"></i> Từ chối</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Attendee list -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-users" style="margin-right:8px;color:var(--accent-blue)"></i>Người tham dự ({{ attendees.count }})</span>
+      </div>
+      <div class="card-body" style="padding:8px 12px">
+        {% for att in attendees %}
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;{% if not forloop.last %}border-bottom:1px solid var(--border-light);{% endif %}">
+          <div class="user-avatar" style="width:28px;height:28px;font-size:11px">{{ att.user.username|first|upper }}</div>
+          <div style="flex:1">
+            <div style="font-size:12.5px;font-weight:500">{{ att.user.get_full_name|default:att.user.username }}</div>
+          </div>
+          <div>
+            {% if att.status == 'accepted' %}<span style="color:var(--accent-green);font-size:11px"><i class="fas fa-check-circle"></i></span>
+            {% elif att.status == 'declined' %}<span style="color:var(--accent-red);font-size:11px"><i class="fas fa-times-circle"></i></span>
+            {% else %}<span style="color:var(--text-muted);font-size:11px"><i class="fas fa-clock"></i></span>{% endif %}
+          </div>
+        </div>
+        {% empty %}
+        <p style="font-size:12px;color:var(--text-muted);text-align:center;padding:12px 0">Chưa có người tham dự.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

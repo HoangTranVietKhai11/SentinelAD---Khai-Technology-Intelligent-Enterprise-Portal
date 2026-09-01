@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Lịch họp - Khai Technology{% endblock %}
+{% block page_heading %}Lịch họp{% endblock %}
+{% block nav_meetings %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1><i class="fas fa-calendar-alt" style="color:var(--accent-cyan);margin-right:8px"></i>Lịch họp</h1>
+    <p>Quản lý cuộc họp và lịch trình của Khai Technology</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'meeting_create' %}" class="btn-sentinel btn-primary-sentinel">
+      <i class="fas fa-plus"></i> Tạo cuộc họp
+    </a>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="filter-bar">
+  <a href="?filter=upcoming" class="btn-sentinel {% if current_filter == 'upcoming' %}btn-primary-sentinel{% else %}btn-secondary-sentinel{% endif %} btn-sm">
+    <i class="fas fa-arrow-right"></i> Sắp tới
+  </a>
+  <a href="?filter=today" class="btn-sentinel {% if current_filter == 'today' %}btn-primary-sentinel{% else %}btn-secondary-sentinel{% endif %} btn-sm">
+    <i class="fas fa-sun"></i> Hôm nay
+  </a>
+  <a href="?filter=week" class="btn-sentinel {% if current_filter == 'week' %}btn-primary-sentinel{% else %}btn-secondary-sentinel{% endif %} btn-sm">
+    <i class="fas fa-calendar-week"></i> Tuần này
+  </a>
+  <a href="?filter=past" class="btn-sentinel {% if current_filter == 'past' %}btn-primary-sentinel{% else %}btn-secondary-sentinel{% endif %} btn-sm">
+    <i class="fas fa-history"></i> Đã qua
+  </a>
+</div>
+
+<!-- Meeting Cards -->
+{% if meetings %}
+<div class="meeting-timeline">
+  {% for meeting in meetings %}
+  <div class="meeting-card {{ meeting.priority }}">
+    <div class="meeting-card-time">
+      <div class="meeting-date">{{ meeting.start_time|date:"d" }}</div>
+      <div class="meeting-month">Tháng {{ meeting.start_time|date:"m" }}</div>
+      <div class="meeting-hour">{{ meeting.start_time|date:"H:i" }}</div>
+    </div>
+    <div class="meeting-card-body">
+      <div class="meeting-card-header">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span class="meeting-type-badge {{ meeting.meeting_type }}">
+              {% if meeting.meeting_type == 'standup' %}<i class="fas fa-bolt"></i>
+              {% elif meeting.meeting_type == 'team' %}<i class="fas fa-users"></i>
+              {% elif meeting.meeting_type == 'all_hands' %}<i class="fas fa-globe"></i>
+              {% elif meeting.meeting_type == 'client' %}<i class="fas fa-handshake"></i>
+              {% elif meeting.meeting_type == 'review' %}<i class="fas fa-clipboard-check"></i>
+              {% elif meeting.meeting_type == 'training' %}<i class="fas fa-graduation-cap"></i>
+              {% else %}<i class="fas fa-calendar"></i>{% endif %}
+              {{ meeting.get_meeting_type_display }}
+            </span>
+            {% if meeting.priority == 'urgent' %}
+            <span class="level-urgent"><i class="fas fa-exclamation-circle"></i> Khẩn cấp</span>
+            {% elif meeting.priority == 'important' %}
+            <span class="level-important"><i class="fas fa-star"></i> Quan trọng</span>
+            {% endif %}
+            {% if meeting.is_recurring %}
+            <span style="font-size:10px;color:var(--accent-cyan)"><i class="fas fa-redo"></i> Lặp lại</span>
+            {% endif %}
+          </div>
+          <a href="{% url 'meeting_detail' meeting.pk %}" style="font-size:15px;font-weight:600;color:var(--text-primary)">{{ meeting.title }}</a>
+        </div>
+      </div>
+      <div class="meeting-card-meta">
+        <span><i class="fas fa-clock"></i> {{ meeting.start_time|date:"H:i" }} - {{ meeting.end_time|date:"H:i" }} ({{ meeting.duration_minutes }} phút)</span>
+        {% if meeting.location %}
+        <span><i class="fas fa-map-marker-alt"></i> {{ meeting.location }}</span>
+        {% endif %}
+        <span><i class="fas fa-user"></i> {{ meeting.organizer.get_full_name|default:meeting.organizer.username }}</span>
+        <span><i class="fas fa-users"></i> {{ meeting.attendees.count }} người tham dự</span>
+      </div>
+      {% if meeting.description %}
+      <div style="font-size:12.5px;color:var(--text-secondary);margin-top:6px">{{ meeting.description|truncatechars:120 }}</div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-icon">📅</div>
+  <h3>Không có cuộc họp nào</h3>
+  <p>Hiện tại chưa có cuộc họp {{ current_filter }}.</p>
+  <a href="{% url 'meeting_create' %}" class="btn-sentinel btn-primary-sentinel" style="margin-top:12px">
+    <i class="fas fa-plus"></i> Tạo cuộc họp mới
+  </a>
+</div>
+{% endif %}
+{% endblock %}

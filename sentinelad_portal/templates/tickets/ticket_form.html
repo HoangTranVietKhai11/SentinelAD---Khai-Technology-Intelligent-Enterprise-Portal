@@ -1,0 +1,11 @@
+﻿{% extends 'base.html' %}{% block title %}Tạo Ticket - SentinelAD{% endblock %}{% block page_heading %}Tạo Ticket mới{% endblock %}{% block nav_tickets %}active{% endblock %}{% block content %}
+<div class="page-header"><div class="page-header-left"><h1>Tạo Ticket mới</h1></div><a href="{% url 'ticket_list' %}" class="btn-sentinel btn-secondary-sentinel"><i class="fas fa-arrow-left"></i> Quay lại</a></div>
+<div class="card" style="max-width:650px"><div class="card-body">
+  <form method="POST">{% csrf_token %}
+    <div style="margin-bottom:16px"><label class="form-label">Tiêu đề *</label><input type="text" name="title" class="form-control" required placeholder="Mô tả ngắn gọn vấn đề..."></div>
+    <div style="margin-bottom:16px"><label class="form-label">Mức ưu tiên</label><select name="priority" class="form-select">{% for k,v in priority_choices %}<option value="{{ k }}" {% if k == "medium" %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+    <div style="margin-bottom:20px"><label class="form-label">Mô tả chi tiết *</label><textarea name="description" class="form-control" rows="5" required placeholder="Mô tả chi tiết vấn đề, các bước tái hiện..."></textarea></div>
+    <div style="display:flex;gap:10px"><button type="submit" class="btn-sentinel btn-primary-sentinel"><i class="fas fa-paper-plane"></i> Tạo Ticket</button><a href="{% url 'ticket_list' %}" class="btn-sentinel btn-secondary-sentinel">Hủy</a></div>
+  </form>
+</div></div>
+{% endblock %}

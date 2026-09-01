@@ -1,0 +1,41 @@
+﻿{% extends 'base.html' %}
+{% block title %}Tickets - SentinelAD{% endblock %}
+{% block page_heading %}Ticket Hỗ trợ{% endblock %}
+{% block nav_tickets %}active{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h1>Tickets</h1><p>{{ tickets.count }} tickets</p></div>
+  <div class="page-actions">
+    <form method="GET" class="filter-bar">
+      <div class="search-bar"><i class="fas fa-search search-icon"></i><input type="text" name="q" placeholder="Tìm kiếm..." value="{{ query }}"></div>
+      <select name="status" class="form-select"><option value="">Tất cả trạng thái</option>{% for k,v in status_choices %}<option value="{{ k }}" {% if status_filter == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+      <select name="priority" class="form-select"><option value="">Tất cả ưu tiên</option>{% for k,v in priority_choices %}<option value="{{ k }}" {% if priority_filter == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+      <button type="submit" class="btn-sentinel btn-secondary-sentinel">Lọc</button>
+    </form>
+    <a href="{% url 'ticket_create' %}" class="btn-sentinel btn-primary-sentinel"><i class="fas fa-plus"></i> Tạo ticket</a>
+  </div>
+</div>
+<div class="card">
+  <div style="overflow-x:auto">
+    <table class="sentinel-table">
+      <thead><tr><th>#</th><th>Tiêu đề</th><th>Ưu tiên</th><th>Trạng thái</th><th>Người tạo</th><th>Người xử lý</th><th>Thời gian</th><th></th></tr></thead>
+      <tbody>
+        {% for ticket in tickets %}
+        <tr>
+          <td class="mono" style="color:var(--text-muted)">#{{ ticket.pk }}</td>
+          <td><a href="{% url 'ticket_detail' ticket.pk %}" style="font-weight:600;color:var(--text-primary)">{{ ticket.title|truncatechars:50 }}</a></td>
+          <td><span class="priority-badge priority-{{ ticket.priority }}">{{ ticket.get_priority_display }}</span></td>
+          <td><span class="badge-status badge-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
+          <td style="font-size:12px">{{ ticket.created_by.get_full_name|default:ticket.created_by.username }}</td>
+          <td style="font-size:12px;color:var(--text-muted)">{{ ticket.assigned_to.get_full_name|default:"-" }}</td>
+          <td style="font-size:11px;color:var(--text-muted)">{{ ticket.created_at|timesince }} trước</td>
+          <td><a href="{% url 'ticket_detail' ticket.pk %}" class="btn-sentinel btn-secondary-sentinel btn-sm"><i class="fas fa-eye"></i></a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">🎫</div><h3>Chưa có ticket nào</h3></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

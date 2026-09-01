@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title }} - Khai Technology{% endblock %}
+{% block page_heading %}{{ page_title }}{% endblock %}
+{% block nav_announcements %}active{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-sentinel">
+  <a href="{% url 'announcement_list' %}"><i class="fas fa-bullhorn"></i> Thông báo</a>
+  <i class="fas fa-chevron-right" style="font-size:9px"></i>
+  <span>{{ page_title }}</span>
+</div>
+
+<div class="card" style="max-width:700px">
+  <div class="card-header">
+    <span class="card-title"><i class="fas fa-edit" style="margin-right:8px;color:var(--accent-orange)"></i>{{ page_title }}</span>
+  </div>
+  <div class="card-body">
+    <form method="POST">
+      {% csrf_token %}
+      <div style="margin-bottom:16px">
+        <label class="form-label">Tiêu đề *</label>
+        <input type="text" name="title" class="form-control" value="{{ ann.title|default:'' }}" required placeholder="Ví dụ: Cập nhật chính sách làm việc từ xa">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div>
+          <label class="form-label">Danh mục</label>
+          <select name="category" class="form-select">
+            {% for k,v in category_choices %}
+            <option value="{{ k }}" {% if ann.category == k %}selected{% endif %}>{{ v }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Mức độ khẩn</label>
+          <select name="level" class="form-select">
+            {% for k,v in level_choices %}
+            <option value="{{ k }}" {% if ann.level == k %}selected{% endif %}>{{ v }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label class="form-label">Nội dung chi tiết *</label>
+        <textarea name="content" class="form-control" rows="6" required placeholder="Nhập nội dung thông báo...">{{ ann.content|default:'' }}</textarea>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text-secondary)">
+          <input type="checkbox" name="pinned" {% if ann.pinned %}checked{% endif %}>
+          <span><i class="fas fa-thumbtack" style="color:var(--accent-orange)"></i> Ghim thông báo này lên đầu trang</span>
+        </label>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button type="submit" class="btn-sentinel btn-primary-sentinel"><i class="fas fa-save"></i> Lưu thông báo</button>
+        <a href="{% url 'announcement_list' %}" class="btn-sentinel btn-secondary-sentinel">Hủy</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

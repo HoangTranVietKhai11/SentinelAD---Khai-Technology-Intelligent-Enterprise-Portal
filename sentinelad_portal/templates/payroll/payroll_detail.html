@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Phiếu lương {{ payroll.period }} - Khai Technology{% endblock %}
+{% block page_heading %}Phiếu lương{% endblock %}
+{% block nav_payroll %}active{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-sentinel">
+  <a href="{% url 'payroll_list' %}"><i class="fas fa-wallet"></i> Thông báo lương</a>
+  <i class="fas fa-chevron-right" style="font-size:9px"></i>
+  <span>{{ payroll.period }}</span>
+</div>
+
+<div class="card" style="max-width:650px">
+  <div class="card-header" style="background:linear-gradient(135deg, rgba(63,185,80,.08), rgba(47,129,247,.08))">
+    <span class="card-title">
+      <i class="fas fa-file-invoice-dollar" style="margin-right:8px;color:var(--accent-green)"></i>
+      Phiếu lương - {{ payroll.period }}
+    </span>
+    {% if payroll.status == 'sent' %}<span class="badge-status badge-active">Đã gửi</span>
+    {% elif payroll.status == 'confirmed' %}<span class="badge-status badge-resolved">Xác nhận</span>
+    {% else %}<span class="badge-status badge-inactive">Nháp</span>{% endif %}
+  </div>
+  <div class="card-body">
+    <!-- Company header -->
+    <div style="text-align:center;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+      <div style="font-size:18px;font-weight:800;color:var(--accent-blue)">KHAI TECHNOLOGY</div>
+      <div style="font-size:11px;color:var(--text-muted)">Domain: khai.local · Cổng thông tin nội bộ</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-top:8px">PHIẾU LƯƠNG {{ payroll.period|upper }}</div>
+    </div>
+
+    <!-- Employee info -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      <div>
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Nhân viên</div>
+        <div style="font-size:14px;font-weight:600">{{ payroll.employee.get_full_name|default:payroll.employee.username }}</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Kỳ lương</div>
+        <div style="font-size:14px;font-weight:600">{{ payroll.period }}</div>
+      </div>
+    </div>
+
+    <!-- Salary breakdown -->
+    <div style="background:var(--bg-tertiary);border-radius:var(--radius-lg);padding:20px;margin-bottom:20px;border:1px solid var(--border)">
+      <div class="payroll-row">
+        <span>Lương cơ bản</span>
+        <span class="mono" style="font-weight:600">{{ payroll.base_salary|floatformat:0 }} VNĐ</span>
+      </div>
+      <div class="payroll-row" style="color:var(--accent-green)">
+        <span><i class="fas fa-plus-circle" style="margin-right:4px"></i>Phụ cấp</span>
+        <span class="mono" style="font-weight:600">+{{ payroll.allowance|floatformat:0 }} VNĐ</span>
+      </div>
+      <div class="payroll-row" style="color:var(--accent-green)">
+        <span><i class="fas fa-gift" style="margin-right:4px"></i>Thưởng</span>
+        <span class="mono" style="font-weight:600">+{{ payroll.bonus|floatformat:0 }} VNĐ</span>
+      </div>
+      <div class="payroll-row" style="color:var(--accent-red)">
+        <span><i class="fas fa-minus-circle" style="margin-right:4px"></i>Khấu trừ (BHXH, thuế...)</span>
+        <span class="mono" style="font-weight:600">-{{ payroll.deduction|floatformat:0 }} VNĐ</span>
+      </div>
+      <div style="border-top:2px solid var(--border);margin-top:12px;padding-top:12px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:15px;font-weight:700;color:var(--text-primary)">THỰC LÃNH</span>
+        <span class="mono" style="font-size:20px;font-weight:800;color:var(--accent-green)">{{ payroll.net_salary|floatformat:0 }} VNĐ</span>
+      </div>
+    </div>
+
+    {% if payroll.note %}
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px">Ghi chú</div>
+      <div style="font-size:13px;color:var(--text-secondary)">{{ payroll.note }}</div>
+    </div>
+    {% endif %}
+
+    <div style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:20px;padding-top:12px;border-top:1px solid var(--border)">
+      Ngày tạo: {{ payroll.created_at|date:"d/m/Y H:i" }}
+      {% if payroll.sent_at %}· Ngày gửi: {{ payroll.sent_at|date:"d/m/Y H:i" }}{% endif %}
+      · Người tạo: {{ payroll.created_by.get_full_name|default:payroll.created_by.username }}
+    </div>
+  </div>
+</div>
+{% endblock %}
