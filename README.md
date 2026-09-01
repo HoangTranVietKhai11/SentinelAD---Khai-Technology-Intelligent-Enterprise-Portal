@@ -124,12 +124,24 @@ Mô hình diễn tập thực tế được thực hiện từ máy **Linux (Att
 * **Kết quả:** Xác định chính xác các dịch vụ đang mở và các phản hồi HTTP status code.
 
 #### 5. Kiểm thử Tấn công Giữ kết nối Cạn kiệt Tài nguyên (Slowloris Attack)
-* **Công cụ:** `SlowHTTPTest`
+* **Công cụ:** `SlowHTTPTest (v1.9.0)`
 * **Lệnh thực thi:**
   ```bash
   slowhttptest -c 200 -H -g -o slowloris -i 10 -r 200 -t GET -u http://192.168.101.7/ -l 60
   ```
-* **Kết quả:** Duy trì thành công 200 kết nối chậm liên tục trong 60 giây, kiểm tra độ ổn định của Web Server và khả năng phát hiện luồng kết nối bất thường trên hệ thống giám sát.
+* **Bảng tham số kiểm thử (Test Parameters):**
+
+| Thông số | Giá trị thiết lập |
+| :--- | :--- |
+| **Test Type** | `SLOW HEADERS` (Gửi header HTTP chậm từng byte) |
+| **Number of Connections** | `200 kết nối đồng thời` |
+| **Connection Rate** | `200 connections/giây` |
+| **Content-Length Value** | `4096 bytes` |
+| **Data Interval** | `10 giây / gói follow-up data` |
+| **Target Test Duration** | `60 giây` |
+
+* **Kết quả thu được:** Duy trì ổn định 200/200 kết nối chậm liên tục suốt 60 giây (`Exit status: Hit test time limit`, `Service Available: YES`), hệ thống giám sát ghi nhận số lượng socket mở và tải kết nối.
+* **Báo cáo chi tiết:** File báo cáo [slowloris.html](docs/reports/slowloris.html) và [slowloris.csv](docs/reports/slowloris.csv) đã được lưu trữ trong thư mục `docs/reports/`.
 
 ---
 
