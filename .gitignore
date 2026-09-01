@@ -1,0 +1,40 @@
+# Python & Django
+__pycache__/
+*.py[cod]
+*$py.class
+*.sqlite3
+*.db
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+!logs/.gitkeep
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# IDE & OS
+.vscode/
+.idea/
+.agents/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Large binaries / installers
+*.msi
+*.exe
+*.zip
+*.tar.gz
