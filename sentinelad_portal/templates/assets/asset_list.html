@@ -1,0 +1,44 @@
+﻿{% extends 'base.html' %}
+{% block title %}Tài sản CNTT - SentinelAD{% endblock %}
+{% block page_heading %}Tài sản CNTT{% endblock %}
+{% block nav_assets %}active{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h1>Tài sản CNTT</h1><p>{{ assets.count }} thiết bị</p></div>
+  <div class="page-actions">
+    <form method="GET" class="filter-bar">
+      <div class="search-bar"><i class="fas fa-search search-icon"></i><input type="text" name="q" placeholder="Tìm kiếm..." value="{{ query }}"></div>
+      <select name="type" class="form-select"><option value="">Tất cả loại</option>{% for k,v in type_choices %}<option value="{{ k }}" {% if type_filter == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+      <select name="status" class="form-select"><option value="">Tất cả trạng thái</option>{% for k,v in status_choices %}<option value="{{ k }}" {% if status_filter == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+      <button type="submit" class="btn-sentinel btn-secondary-sentinel">Lọc</button>
+    </form>
+    <a href="{% url 'asset_create' %}" class="btn-sentinel btn-primary-sentinel"><i class="fas fa-plus"></i> Thêm tài sản</a>
+  </div>
+</div>
+<div class="card">
+  <div style="overflow-x:auto">
+    <table class="sentinel-table">
+      <thead><tr><th>Mã tài sản</th><th>Tên thiết bị</th><th>Loại</th><th>Serial</th><th>Người sử dụng</th><th>Bảo hành</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+      <tbody>
+        {% for asset in assets %}
+        <tr>
+          <td><span class="mono" style="color:var(--accent-blue)">{{ asset.asset_tag }}</span></td>
+          <td><strong>{{ asset.asset_name }}</strong></td>
+          <td>{{ asset.get_asset_type_display }}</td>
+          <td class="mono" style="font-size:11px;color:var(--text-muted)">{{ asset.serial_number|default:"-" }}</td>
+          <td>{{ asset.assigned_user_name|default:"-" }}</td>
+          <td style="font-size:12px;{% if asset.is_warranty_expiring %}color:var(--accent-red){% else %}color:var(--text-muted){% endif %}">{{ asset.warranty_date|date:"d/m/Y"|default:"-" }}</td>
+          <td><span class="badge-status badge-{{ asset.status }}">{{ asset.get_status_display }}</span></td>
+          <td>
+            <a href="{% url 'asset_edit' asset.pk %}" class="btn-sentinel btn-secondary-sentinel btn-sm"><i class="fas fa-edit"></i></a>
+            <a href="{% url 'asset_delete' asset.pk %}" class="btn-sentinel btn-danger-sentinel btn-sm"><i class="fas fa-trash"></i></a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">🖥️</div><h3>Chưa có tài sản nào</h3></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Nhân viên - Khai Technology{% endblock %}
+{% block page_heading %}Quản lý Nhân viên{% endblock %}
+{% block nav_employees %}active{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1><i class="fas fa-users" style="color:var(--accent-blue);margin-right:8px"></i>Nhân viên Active Directory</h1>
+    <p>{{ employees.count }} nhân sự đồng bộ từ DC-01 (192.168.101.10)</p>
+  </div>
+  <div class="page-actions">
+    {% if user_role == 'administrator' %}
+    <a href="{% url 'sync_ad' %}" class="btn-sentinel btn-secondary-sentinel" title="Đồng bộ lại từ máy chủ Active Directory">
+      <i class="fas fa-sync-alt"></i> Đồng bộ từ DC-01
+    </a>
+    {% endif %}
+    <form method="GET" class="filter-bar">
+      <div class="search-bar"><i class="fas fa-search search-icon"></i><input type="text" name="q" placeholder="Tìm kiếm..." value="{{ query }}"></div>
+      <select name="dept" class="form-select"><option value="">Tất cả phòng ban</option>{% for d in departments %}<option value="{{ d.pk }}" {% if dept_filter == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.name }}</option>{% endfor %}</select>
+      <select name="status" class="form-select"><option value="">Tất cả trạng thái</option><option value="active" {% if status_filter == "active" %}selected{% endif %}>Đang làm</option><option value="inactive" {% if status_filter == "inactive" %}selected{% endif %}>Nghỉ việc</option><option value="onleave" {% if status_filter == "onleave" %}selected{% endif %}>Nghỉ phép</option></select>
+      <button type="submit" class="btn-sentinel btn-secondary-sentinel">Lọc</button>
+    </form>
+    {% if user_role == 'administrator' %}
+    <a href="{% url 'employee_create' %}" class="btn-sentinel btn-primary-sentinel"><i class="fas fa-plus"></i> Thêm nhân viên</a>
+    {% endif %}
+  </div>
+</div>
+<div class="card">
+  <div style="overflow-x:auto">
+    <table class="sentinel-table">
+      <thead><tr><th>Mã NV</th><th>Họ và tên</th><th>Email</th><th>Phòng ban</th><th>Chức danh</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+      <tbody>
+        {% for emp in employees %}
+        <tr>
+          <td><span class="mono" style="color:var(--accent-blue)">{{ emp.employee_id }}</span></td>
+          <td><strong>{{ emp.full_name }}</strong></td>
+          <td style="color:var(--text-secondary)">{{ emp.email }}</td>
+          <td>{{ emp.department.name|default:"-" }}</td>
+          <td style="color:var(--text-secondary)">{{ emp.position|default:"-" }}</td>
+          <td><span class="badge-status badge-{{ emp.status }}">{{ emp.get_status_display }}</span></td>
+          <td>
+            <a href="{% url 'employee_edit' emp.pk %}" class="btn-sentinel btn-secondary-sentinel btn-sm"><i class="fas fa-edit"></i></a>
+            <a href="{% url 'employee_delete' emp.pk %}" class="btn-sentinel btn-danger-sentinel btn-sm"><i class="fas fa-trash"></i></a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">👥</div><h3>Không có nhân viên nào</h3></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

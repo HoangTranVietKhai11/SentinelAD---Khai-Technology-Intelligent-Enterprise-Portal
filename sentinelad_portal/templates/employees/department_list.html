@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Phòng ban - Khai Technology{% endblock %}
+{% block page_heading %}Quản lý Phòng ban{% endblock %}
+{% block nav_departments %}active{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1><i class="fas fa-building" style="color:var(--accent-blue);margin-right:8px"></i>Phòng ban (OU Structure)</h1>
+    <p>{{ departments.count }} phòng ban đồng bộ từ Active Directory (DC-01)</p>
+  </div>
+  <div class="page-actions">
+    {% if user_role == 'administrator' %}
+    <a href="{% url 'sync_ad' %}" class="btn-sentinel btn-secondary-sentinel" title="Đồng bộ lại từ máy chủ Active Directory">
+      <i class="fas fa-sync-alt"></i> Đồng bộ từ DC-01
+    </a>
+    <a href="{% url 'department_create' %}" class="btn-sentinel btn-primary-sentinel"><i class="fas fa-plus"></i> Thêm phòng ban</a>
+    {% endif %}
+  </div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+  {% for dept in departments %}
+  <div class="card" style="transition:all .2s">
+    <div class="card-body">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <div style="width:40px;height:40px;border-radius:10px;background:rgba(47,129,247,.15);display:flex;align-items:center;justify-content:center"><i class="fas fa-building" style="color:var(--accent-blue)"></i></div>
+        <div><div style="font-weight:600;font-size:15px;color:var(--text-primary)">{{ dept.name }}</div><div style="font-size:11px;color:var(--text-muted)">{{ dept.employee_count }} nhân viên</div></div>
+      </div>
+      {% if dept.manager_name %}<div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-user-tie" style="margin-right:6px"></i>{{ dept.manager_name }}</div>{% endif %}
+      {% if dept.description %}<div style="font-size:12px;color:var(--text-muted)">{{ dept.description|truncatechars:80 }}</div>{% endif %}
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <a href="{% url 'department_edit' dept.pk %}" class="btn-sentinel btn-secondary-sentinel btn-sm"><i class="fas fa-edit"></i> Sửa</a>
+        <a href="{% url 'department_delete' dept.pk %}" class="btn-sentinel btn-danger-sentinel btn-sm"><i class="fas fa-trash"></i></a>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">🏢</div><h3>Chưa có phòng ban nào</h3></div>
+  {% endfor %}
+</div>
+{% endblock %}

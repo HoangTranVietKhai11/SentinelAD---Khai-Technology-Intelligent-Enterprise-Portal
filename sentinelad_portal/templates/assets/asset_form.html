@@ -1,0 +1,26 @@
+﻿{% extends 'base.html' %}
+{% block title %}{{ page_title }} - SentinelAD{% endblock %}
+{% block page_heading %}{{ page_title }}{% endblock %}
+{% block nav_assets %}active{% endblock %}
+{% block content %}
+<div class="page-header"><div class="page-header-left"><h1>{{ page_title }}</h1></div><a href="{% url 'asset_list' %}" class="btn-sentinel btn-secondary-sentinel"><i class="fas fa-arrow-left"></i> Quay lại</a></div>
+<div class="card" style="max-width:700px">
+  <div class="card-body">
+    <form method="POST">
+      {% csrf_token %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div><label class="form-label">Mã tài sản *</label><input type="text" name="asset_tag" class="form-control" value="{{ asset.asset_tag|default:'' }}" required></div>
+        <div><label class="form-label">Tên thiết bị *</label><input type="text" name="asset_name" class="form-control" value="{{ asset.asset_name|default:'' }}" required></div>
+        <div><label class="form-label">Loại thiết bị</label><select name="asset_type" class="form-select">{% for k,v in type_choices %}<option value="{{ k }}" {% if asset.asset_type == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+        <div><label class="form-label">Trạng thái</label><select name="status" class="form-select">{% for k,v in status_choices %}<option value="{{ k }}" {% if asset.status == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+        <div><label class="form-label">Số Serial</label><input type="text" name="serial_number" class="form-control" value="{{ asset.serial_number|default:'' }}"></div>
+        <div><label class="form-label">Người sử dụng</label><input type="text" name="assigned_user_name" class="form-control" value="{{ asset.assigned_user_name|default:'' }}"></div>
+        <div><label class="form-label">Ngày mua</label><input type="date" name="purchase_date" class="form-control" value="{{ asset.purchase_date|date:'Y-m-d'|default:'' }}"></div>
+        <div><label class="form-label">Hết hạn bảo hành</label><input type="date" name="warranty_date" class="form-control" value="{{ asset.warranty_date|date:'Y-m-d'|default:'' }}"></div>
+      </div>
+      <div style="margin-top:16px"><label class="form-label">Ghi chú</label><textarea name="notes" class="form-control">{{ asset.notes|default:'' }}</textarea></div>
+      <div style="margin-top:20px;display:flex;gap:10px"><button type="submit" class="btn-sentinel btn-primary-sentinel"><i class="fas fa-save"></i> Lưu</button><a href="{% url 'asset_list' %}" class="btn-sentinel btn-secondary-sentinel">Hủy</a></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

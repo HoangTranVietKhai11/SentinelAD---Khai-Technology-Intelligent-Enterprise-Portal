@@ -1,0 +1,18 @@
+﻿{% extends 'base.html' %}
+{% block title %}{{ page_title }} - SentinelAD{% endblock %}
+{% block page_heading %}{{ page_title }}{% endblock %}
+{% block nav_departments %}active{% endblock %}
+{% block content %}
+<div class="page-header"><div class="page-header-left"><h1>{{ page_title }}</h1></div><a href="{% url 'department_list' %}" class="btn-sentinel btn-secondary-sentinel"><i class="fas fa-arrow-left"></i> Quay lại</a></div>
+<div class="card" style="max-width:520px">
+  <div class="card-body">
+    <form method="POST">
+      {% csrf_token %}
+      <div style="margin-bottom:16px"><label class="form-label">Tên phòng ban *</label><input type="text" name="name" class="form-control" value="{{ dept.name|default:'' }}" required></div>
+      <div style="margin-bottom:16px"><label class="form-label">Trưởng phòng</label><input type="text" name="manager_name" class="form-control" value="{{ dept.manager_name|default:'' }}"></div>
+      <div style="margin-bottom:20px"><label class="form-label">Mô tả</label><textarea name="description" class="form-control">{{ dept.description|default:'' }}</textarea></div>
+      <div style="display:flex;gap:10px"><button type="submit" class="btn-sentinel btn-primary-sentinel"><i class="fas fa-save"></i> Lưu</button><a href="{% url 'department_list' %}" class="btn-sentinel btn-secondary-sentinel">Hủy</a></div>
+    </form>
+  </div>
+</div>
+{% endblock %}
