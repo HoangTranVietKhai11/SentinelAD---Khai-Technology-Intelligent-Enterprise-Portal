@@ -4,40 +4,49 @@ Dự án xây dựng **Cổng thông tin nội bộ (Intranet Portal)** cho côn
 
 ---
 
-## 📸 Hình ảnh minh chứng hoàn thành (Demo Screenshots)
+## 📸 Hình ảnh minh chứng hoàn thành thực tế (Evidence Screenshots)
 
-### 1. Trang chủ Cổng thông tin (Dashboard)
-Trang tổng quan với banner chào mừng nhân viên, lịch họp sắp tới trong ngày, feed tin tức công ty, danh sách nhân sự mới và biểu đồ phân bổ tài sản.
+### I. Cổng thông tin nội bộ (Web Portal)
 
+#### 1. Trang chủ Cổng thông tin (Dashboard)
+Trang tổng quan với banner chào mừng nhân viên, lịch họp sắp tới trong ngày, feed tin tức công ty, danh sách nhân sự mới và biểu đồ phân bổ tài sản CNTT.
 ![Dashboard](docs/screenshots/dashboard.png)
 
----
-
-### 2. Quản lý Lịch họp & Điểm danh RSVP (`/meetings/`)
+#### 2. Quản lý Lịch họp & Điểm danh RSVP (`/meetings/`)
 Hỗ trợ tạo lịch họp theo phòng ban, lọc theo ngày/tuần, đặt địa điểm (Google Meet, Zoom, Phòng họp) và cho phép nhân viên bấm xác nhận tham dự (RSVP).
-
 ![Lịch họp](docs/screenshots/meetings.png)
 
----
-
-### 3. Thông báo lương bảo mật (`/payroll/`)
+#### 3. Thông báo lương bảo mật (`/payroll/`)
 Phân quyền bảo mật: nhân viên chỉ xem được phiếu lương của chính mình, chỉ Admin/HR mới có quyền tạo và quản lý bảng lương toàn công ty.
-
 ![Thông báo lương](docs/screenshots/payroll.png)
 
----
-
-### 4. Bảng tin nội bộ & Chào đón nhân sự mới (`/announcements/`)
+#### 4. Bảng tin nội bộ & Chào đón nhân sự mới (`/announcements/`)
 Đăng tải tin tức công ty, chính sách, sự kiện team building và bài viết chào mừng nhân viên mới gia nhập với tính năng ghim bài quan trọng.
-
 ![Bảng tin nội bộ](docs/screenshots/announcements.png)
 
+#### 5. Danh mục Nhân viên đồng bộ trực tiếp từ Active Directory (`/employees/`)
+Dữ liệu nhân sự được đồng bộ 2 chiều trực tiếp từ máy chủ Domain Controller (`DC-01: 192.168.101.10`) qua giao thức LDAP. Có nút bấm "Đồng bộ từ DC-01" 1-click.
+![Quản lý nhân viên](docs/screenshots/employees.png)
+
 ---
 
-### 5. Danh mục Nhân viên đồng bộ trực tiếp từ Active Directory (`/employees/`)
-Dữ liệu nhân sự được đồng bộ 2 chiều trực tiếp từ máy chủ Domain Controller (`DC-01: 192.168.101.10`) qua giao thức LDAP. Có nút bấm "Đồng bộ từ DC-01" 1-click.
+### II. Hạ tầng Máy chủ Windows Server 2022 (`DC-01`: `192.168.101.10`)
 
-![Quản lý nhân viên](docs/screenshots/employees.png)
+#### 1. Active Directory Users and Computers (Cấu trúc OU & Tài khoản)
+Cấu trúc tổ chức `OU=Company` phân chia theo phòng ban (`IT`, `HR`, `Finance`, `Sales`, `Marketing`, `Telesale`, `Servers`, `Workstations`), tạo nhóm bảo mật `IT_Admin`, `Helpdesk` và tài khoản người dùng `Khai IT Admin`.
+![Active Directory](docs/screenshots/server_aduc.png)
+
+#### 2. DNS Server (`khai.local`)
+Khai báo đầy đủ các bản ghi Host (A) phân giải tên miền nội bộ: `dc-01` (`192.168.101.10`), `intranet` (`192.168.101.7`), `grafana` (`192.168.101.30`), `ai` (`192.168.101.40`), `web01` (`192.168.101.20`).
+![DNS Manager](docs/screenshots/server_dns.png)
+
+#### 3. DHCP Server (`Scope 192.168.101.0 khai_LAN`)
+Cấu hình Scope Options cấp phát mạng tự động: `Option 003 Router` (`192.168.101.10`), `Option 006 DNS Servers` (`192.168.101.10`), `Option 015 DNS Domain Name` (`khai.local`) cho toàn bộ thiết bị và điện thoại nhân viên khi vào Wi-Fi.
+![DHCP Server](docs/screenshots/server_dhcp.png)
+
+#### 4. Routing and Remote Access (Hạ tầng VPN Server)
+Kích hoạt thành công dịch vụ VPN trên máy chủ `DC-01 (local)` với đầy đủ các cổng bảo mật: `WAN Miniport (IKEv2)`, `WAN Miniport (L2TP)`, `WAN Miniport (SSTP)` và `WAN Miniport (PPTP)` sẵn sàng nhận kết nối an toàn từ xa.
+![VPN Server](docs/screenshots/server_rras.png)
 
 ---
 
@@ -140,7 +149,7 @@ docker compose up -d
 
 ### 4. Địa chỉ truy cập
 * **Web Portal nội bộ:** `http://intranet.khai.local` (hoặc `http://localhost`)
-* **Grafana Monitoring:** `http://localhost:3000` (User: `admin` / Pass: `admin`)
+* **Grafana Observability:** `http://localhost:3000` (User: `admin` / Pass: `admin`)
 * **Prometheus Metrics:** `http://localhost:9090`
 
 ---
